@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CS Quiz — siachshai.online</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header>
+  <h1><a href="#" id="homeLink"><span>CS Quiz</span> · siachshai.online</a></h1>
+  <div class="hrow">
+    <div class="bar" title="Correct (green) vs wrong (red)"><div class="seg-g" id="segG"></div><div class="seg-r" id="segR"></div></div>
+    <div class="meta"><span id="progText">pick a topic</span><span id="scoreText"></span><span id="timer" title="Elapsed time">00:00</span></div>
+  </div>
+  <div class="hrow push-down">
+    <div class="bar-thin" title="Progress"><div id="progFill"></div></div>
+  </div>
+  <div id="circles"></div>
+</header>
+<main>
+  <section id="viewHome"></section>
+  <section id="viewQuiz" class="hidden"><div id="questions"></div></section>
+  <section id="viewResult" class="hidden"></section>
+</main>
+<footer>10 topics · 20 questions each · instant feedback · progress saved in this browser only</footer>
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

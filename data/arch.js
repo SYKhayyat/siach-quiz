@@ -1,0 +1,23 @@
+export default { title: "Architecture & Logic", desc: "Bits, CPU, memory hierarchy, discrete math for CS.",
+questions: [
+{q: "Binary <code>1011</code> equals decimal…", choices: ["9", "11", "13", "7"], answer: 1, why: "8+0+2+1 = 11.", tag: "Bits"},
+{q: "Hex <code>0xFF</code> equals…", choices: ["255", "256", "100", "15"], answer: 0, why: "15×16 + 15 = 255 — one all-ones byte.", tag: "Bits"},
+{q: "Two's complement lets us…", choices: ["Store floats", "Represent signed ints with one zero and simple add/sub", "Avoid overflow", "Compress"], answer: 1, why: "Negate by invert+1; hardware reuses the unsigned adder for signed math.", tag: "Bits"},
+{q: "8-bit signed range is…", choices: ["0..255", "-128..127", "-256..255", "0..127"], answer: 1, why: "2⁸ patterns split: −2⁷ … 2⁷−1.", tag: "Bits"},
+{q: "<code>A AND B</code> is true when…", choices: ["Either is true", "Both are true", "Neither", "A is false"], answer: 1, why: "Conjunction needs both; disjunction (OR) needs either.", tag: "Logic"},
+{q: "De Morgan: <code>NOT (A AND B)</code> = …", choices: ["<code>(NOT A) OR (NOT B)</code>", "<code>(NOT A) AND (NOT B)</code>", "<code>A OR B</code>", "<code>A AND B</code>"], answer: 0, why: "Negation flips AND↔OR: <code>¬(A∧B) ≡ ¬A∨¬B</code>.", tag: "Logic"},
+{q: "CPU fetch-decode-execute uses…", choices: ["RAM only", "PC + registers + ALU in a cycle", "Disk directly", "GPU only"], answer: 1, why: "Program counter fetches, control decodes, ALU/paths execute, then PC advances.", tag: "CPU"},
+{q: "Cache hierarchy exists because…", choices: ["Caches are huge", "Small-fast SRAM near CPU hides slow DRAM latency (locality)", "RAM is fast enough", "Disks are fast"], answer: 1, why: "Temporal/spatial locality make L1/L2/L3 hit rates high, cutting average access time.", tag: "Memory"},
+{q: "Pipelining speeds CPUs by…", choices: ["Higher voltage", "Overlapping instruction stages like an assembly line", "Bigger cache only", "Fewer registers"], answer: 1, why: "While one instruction executes, the next decodes and another fetches — throughput ≈ 1/cycle.", tag: "CPU"},
+{q: "Branch misprediction costs…", choices: ["Nothing", "Flushed pipeline slots (wasted cycles)", "More RAM", "Disk I/O"], answer: 1, why: "Speculative work down the wrong path is discarded; predictors + branchless code mitigate it.", tag: "CPU"},
+{q: "Little-endian means…", choices: ["Big byte first", "Least-significant byte at lowest address", "Bits reversed", "Network order"], answer: 1, why: "x86 stores 0x12345678 as 78 56 34 12; network order is big-endian.", tag: "Bits"},
+{q: "Overflow of unsigned 8-bit <code>255+1</code> gives…", choices: ["256", "0 (wraps modulo 256)", "Error always", "-1"], answer: 1, why: "Fixed-width arithmetic wraps mod 2ⁿ (in C unsigned; signed overflow is UB).", tag: "Bits"},
+{q: "I/O polling vs interrupts?", choices: ["Same", "Polling busy-waits; interrupts signal the CPU on events", "Interrupts are slower always", "Polling uses no CPU"], answer: 1, why: "Interrupts + DMA free the CPU; polling wastes cycles but is simpler/deterministic.", tag: "IO"},
+{q: "SSD vs HDD advantage?", choices: ["Spinning speed", "No seeks: O(1)-ish random access + shock-proof", "Cheaper per TB always", "Needs defrag"], answer: 1, why: "NAND flash has no mechanical seek; random reads are orders of magnitude faster.", tag: "Storage"},
+{q: "What is an ISR?", choices: ["A file", "Interrupt Service Routine: handler run on hardware event", "A compiler", "A cable"], answer: 1, why: "The vector table jumps to the ISR, which services the device and returns.", tag: "IO"},
+{q: "Propositional <code>P → Q</code> is false only when…", choices: ["P false", "P true and Q false", "Both false", "Q true"], answer: 1, why: "Implication is <code>¬P ∨ Q</code>; only true-premise + false-conclusion breaks it.", tag: "Logic"},
+{q: "2¹⁰ is…", choices: ["1000 exactly", "1024 (≈1K)", "2048", "512"], answer: 1, why: "1024 bytes = 1 KiB; engineers approximate as 1K.", tag: "Bits"},
+{q: "Big-O of adding two n-digit numbers?", choices: ["O(1)", "O(n)", "O(n²)", "O(log n)"], answer: 1, why: "One pass over digits with carry — linear in digit count.", tag: "Analysis"},
+{q: "XOR (<code>⊕</code>) is true when…", choices: ["Both same", "Inputs differ", "Both true", "Both false"], answer: 1, why: "Exclusive-or = 'one or the other but not both' — basis of parity/checksums.", tag: "Logic"},
+{q: "Why align data in memory?", choices: ["Looks tidy", "Aligned words fetch in one bus transaction (speed/atomicity)", "Saves disk", "Encrypts"], answer: 1, why: "Misaligned accesses may need two fetches or fault; compilers pad structs for this.", tag: "Memory"}
+]};

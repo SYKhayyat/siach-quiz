@@ -1,0 +1,23 @@
+export default { title: "Data Structures", desc: "Arrays, lists, stacks, queues, trees, heaps, hash tables, graphs.",
+questions: [
+{q: "Array random access is…", choices: ["O(1)", "O(log n)", "O(n)", "O(n log n)"], answer: 0, why: "Contiguous storage + index arithmetic gives constant-time <code>a[i]</code>.", tag: "Arrays"},
+{q: "Appending to a dynamic array (amortized) is…", choices: ["O(1)", "O(n) always", "O(log n)", "O(n²)"], answer: 0, why: "Doubling growth makes the average append O(1); only occasional resizes cost O(n).", tag: "Arrays"},
+{q: "A stack is…", choices: ["FIFO", "LIFO", "Sorted", "Random"], answer: 1, why: "Stack = last-in first-out: <code>push/pop</code> at one end. Queues are FIFO.", tag: "Stacks"},
+{q: "A queue's two operations are…", choices: ["push/pop", "enqueue/dequeue", "insert/sort", "open/close"], answer: 1, why: "Enqueue at the back, dequeue from the front — FIFO order.", tag: "Queues"},
+{q: "Singly linked list insertion at head is…", choices: ["O(1)", "O(n)", "O(log n)", "O(n²)"], answer: 0, why: "Just rewire a couple of pointers; no shifting like arrays.", tag: "Linked lists"},
+{q: "Finding an element in an unsorted linked list is…", choices: ["O(1)", "O(log n)", "O(n)", "O(0)"], answer: 2, why: "No index arithmetic — you must walk node by node.", tag: "Linked lists"},
+{q: "In a max-heap, the maximum lives…", choices: ["At the root", "At a leaf", "In the middle", "Anywhere"], answer: 0, why: "Heap invariant puts the extremum at index 0; insert/extract fix up in O(log n).", tag: "Heaps"},
+{q: "A binary search tree lookup averages…", choices: ["O(1)", "O(log n) if balanced", "O(n!) ", "O(2ⁿ)"], answer: 1, why: "Each step discards half the tree; degenerate (unbalanced) trees degrade to O(n).", tag: "Trees"},
+{q: "Which traversal yields sorted order on a BST?", choices: ["Preorder", "Inorder", "Postorder", "Level-order"], answer: 1, why: "Inorder (left, node, right) visits keys ascending.", tag: "Trees"},
+{q: "Hash table average lookup is…", choices: ["O(1)", "O(n) always", "O(log n)", "O(n log n)"], answer: 0, why: "Hashing jumps straight to a bucket; worst case degrades with collisions but averages constant.", tag: "Hashing"},
+{q: "A good hash function is…", choices: ["Slow and reversible", "Fast, uniform, deterministic", "Random each call", "Order-preserving always"], answer: 1, why: "Same input → same output, spread evenly across buckets, cheap to compute.", tag: "Hashing"},
+{q: "Collision resolution with chaining means…", choices: ["Probing for next slot", "Each bucket holds a list of entries", "Rehashing the key text", "Doubling keys"], answer: 1, why: "Chaining stores colliding items in a per-bucket linked list; open addressing probes instead.", tag: "Hashing"},
+{q: "BFS uses which helper structure?", choices: ["Stack", "Queue", "Heap", "Set only"], answer: 1, why: "Breadth-first expands level by level via a FIFO queue; DFS uses a stack/recursion.", tag: "Graphs"},
+{q: "DFS can be implemented with…", choices: ["A queue only", "Recursion (implicit stack)", "Sorting", "Binary search"], answer: 1, why: "Recursive calls form a LIFO stack of the current path.", tag: "Graphs"},
+{q: "An adjacency list is best for…", choices: ["Dense graphs", "Sparse graphs (little memory)", "Only trees", "Complete graphs"], answer: 1, why: "It stores only existing edges O(V+E); matrices waste O(V²) on sparse graphs.", tag: "Graphs"},
+{q: "A balanced BST (AVL/red-black) guarantees…", choices: ["O(1) all ops", "O(log n) insert/search/delete", "O(n) search", "Sorted input only"], answer: 1, why: "Rotations keep height logarithmic, bounding every dictionary operation.", tag: "Trees"},
+{q: "Which structure gives O(1) amortized queue via two stacks?", choices: ["Two stacks (inbox/outbox)", "Two heaps", "Two arrays sorted", "Linked matrix"], answer: 0, why: "Push to inbox, pop from outbox (refill by flipping inbox) — each element moves O(1) amortized.", tag: "Queues"},
+{q: "Trie (prefix tree) is ideal for…", choices: ["Range sums", "Autocomplete / prefix search", "Sorting numbers", "Shortest path"], answer: 1, why: "Shared prefixes give O(k) lookup in key length, perfect for dictionaries and completion.", tag: "Trees"},
+{q: "Stable sort means…", choices: ["O(n log n)", "Equal keys keep original order", "In-place", "No comparisons"], answer: 1, why: "Stability preserves input order among ties (e.g. Merge sort; quicksort typically not).", tag: "Sorting"},
+{q: "Circular buffer (ring) is best for…", choices: ["Fixed-size FIFO stream (e.g. log tail)", "Arbitrary deletes", "Sorted set", "Graph edges"], answer: 0, why: "Head/tail indices wrap around a fixed array — O(1) enqueue/dequeue with no shifting.", tag: "Queues"}
+]};
