@@ -107,3 +107,18 @@ export function scrollToQuestion(qi) {
   const el = document.getElementById("q-" + qi);
   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
+const KEY_TO_CHOICE = { 1: 0, 2: 1, 3: 2, 4: 3, a: 0, b: 1, c: 2, d: 3 };
+
+export function handleQuizKey(event, store, hooks) {
+  if (/^(input|textarea)$/i.test(event.target.tagName)) return;
+  const total = store.current().questions.length;
+  const key = event.key.toLowerCase();
+  if (key === "arrowright") {
+    hooks.onGoto(Math.min(store.pos + 1, total - 1));
+  } else if (key === "arrowleft") {
+    hooks.onGoto(Math.max(store.pos - 1, 0));
+  } else if (Object.hasOwn(KEY_TO_CHOICE, key)) {
+    if (!store.revealed[store.pos]) hooks.onAnswer(store.pos, KEY_TO_CHOICE[key]);
+  }
+}

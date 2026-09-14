@@ -10,7 +10,7 @@ export function renderHome(els, show, topics, readBest, onStart) {
   const ids = Object.keys(topics);
   els.home.innerHTML =
     '<div class="hero"><h2>Pick a topic — 20 questions each</h2>' +
-    "<p>Multiple choice. Answer to see instantly if you were right and why. Green/red bar on top tracks right vs wrong, thin blue bar tracks progress. Timer always runs.</p></div>" +
+    "<p>Multiple choice. Answer to see instantly if you were right and why. Green/red bar on top tracks right vs wrong, thin blue bar tracks progress. Timer always runs. Tip: keys 1–4 / A–D answer, ← / → move.</p></div>" +
     '<div class="grid">' +
     ids
       .map((id) => {

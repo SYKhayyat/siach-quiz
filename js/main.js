@@ -2,7 +2,7 @@ import { topics } from "../data/all.js";
 import { Timer } from "./timer.js";
 import { QuizStore, readBest, writeBest } from "./store.js";
 import { renderHome } from "./views/home-view.js";
-import { renderQuiz, scrollToQuestion } from "./views/quiz-view.js";
+import { renderQuiz, scrollToQuestion, handleQuizKey } from "./views/quiz-view.js";
 import { renderResult } from "./views/result-view.js";
 
 const $ = (id) => document.getElementById(id);
@@ -22,6 +22,11 @@ const els = {
 
 const timer = new Timer($("timer"));
 const store = new QuizStore(topics);
+let quizHooks = null;
+
+function onKeyDown(event) {
+  if (quizHooks) handleQuizKey(event, store, quizHooks);
+}
 
 function show(name) {
   els.home.classList.toggle("hidden", name !== "home");
@@ -30,12 +35,21 @@ function show(name) {
 }
 
 function openHome() {
+  quizHooks = null;
+  document.removeEventListener("keydown", onKeyDown);
   timer.reset();
   renderHome(els, show, topics, readBest, openQuiz);
 }
 
 function refreshQuiz() {
-  renderQuiz(els, show, store, {
+  renderQuiz(els, show, store, quizHooks);
+}
+
+function openQuiz(topicId) {
+  store.start(topicId);
+  timer.reset();
+  timer.start();
+  quizHooks = {
     onAnswer: (qi, choice) => {
       if (store.answer(qi, choice)) refreshQuiz();
     },
@@ -46,21 +60,19 @@ function refreshQuiz() {
     },
     onFinish: finishQuiz,
     onHome: openHome,
-  });
-}
-
-function openQuiz(topicId) {
-  store.start(topicId);
-  timer.reset();
-  timer.start();
+  };
   refreshQuiz();
   window.scrollTo({ top: 0 });
+  document.removeEventListener("keydown", onKeyDown);
+  document.addEventListener("keydown", onKeyDown);
 }
 
 function finishQuiz() {
   const { right, done, total } = store.counts();
   if (done < total) return;
   timer.stop();
+  quizHooks = null;
+  document.removeEventListener("keydown", onKeyDown);
   writeBest(store.topicId, right + "/" + total);
   renderResult(els, show, store, timer.elapsedMs(), {
     onRetry: () => openQuiz(store.topicId),
