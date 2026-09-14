@@ -12,10 +12,11 @@ function grade(pct) {
 
 export function renderResult(els, show, store, elapsedMs, hooks) {
   const topic = store.current();
-  const { right, wrong, done, total } = store.counts();
+  const { right, wrong, total } = store.counts();
   const pct = Math.round((right / total) * 100);
-  const review = topic.questions
-    .map((q, i) => {
+  const review = store.order
+    .map((_, i) => {
+      const q = store.questionAt(i);
       const ok = store.answers[i] === q.answer;
       return (
         '<div class="rev-item">' +
@@ -52,7 +53,7 @@ export function renderResult(els, show, store, elapsedMs, hooks) {
     ") · " +
     grade(pct) +
     "</div>" +
-    '<div class="nav" style="justify-content:center;margin-top:16px"><button class="btn" id="retryBtn">Retry</button>' +
+    '<div class="nav" style="justify-content:center;margin-top:16px"><button class="btn" id="retryBtn">Retry (new random 20)</button>' +
     '<button class="btn ghost" id="backBtn">All topics</button></div>' +
     '<div class="rev">' +
     review +

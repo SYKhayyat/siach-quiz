@@ -1,7 +1,19 @@
+export const ROUND_SIZE = 20;
+
+function sampledOrder(poolSize, k) {
+  const idx = Array.from({ length: poolSize }, (_, i) => i);
+  for (let i = idx.length - 1; i > 0; i -= 1) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [idx[i], idx[j]] = [idx[j], idx[i]];
+  }
+  return idx.slice(0, Math.min(k, poolSize));
+}
+
 export class QuizStore {
   constructor(topics) {
     this.topics = topics;
     this.topicId = null;
+    this.order = [];
     this.answers = [];
     this.revealed = [];
     this.pos = 0;
@@ -12,19 +24,30 @@ export class QuizStore {
   current() {
     return this.topics[this.topicId];
   }
+  get size() {
+    return this.order.length;
+  }
+  poolSize() {
+    return this.current().questions.length;
+  }
+  questionAt(i) {
+    return this.current().questions[this.order[i]];
+  }
   start(topicId) {
     this.topicId = topicId;
     this.pos = 0;
-    const total = this.current().questions.length;
-    const saved = readProgress(topicId, total);
+    const pool = this.poolSize();
+    const saved = readProgress(topicId, pool);
     if (saved) {
+      this.order = saved.order;
       this.answers = saved.answers;
       this.revealed = saved.revealed;
       this.pos = this.revealed.indexOf(false);
       if (this.pos < 0) this.pos = 0;
     } else {
-      this.answers = Array(total).fill(null);
-      this.revealed = Array(total).fill(false);
+      this.order = sampledOrder(pool, ROUND_SIZE);
+      this.answers = Array(this.order.length).fill(null);
+      this.revealed = Array(this.order.length).fill(false);
     }
   }
   answer(qi, choice) {
@@ -38,14 +61,13 @@ export class QuizStore {
     let right = 0;
     let wrong = 0;
     let done = 0;
-    const questions = this.current().questions;
-    questions.forEach((q, i) => {
-      if (!this.revealed[i]) return;
+    for (let i = 0; i < this.order.length; i += 1) {
+      if (!this.revealed[i]) continue;
       done += 1;
-      if (this.answers[i] === q.answer) right += 1;
+      if (this.answers[i] === this.questionAt(i).answer) right += 1;
       else wrong += 1;
-    });
-    return { right, wrong, done, total: questions.length };
+    }
+    return { right, wrong, done, total: this.order.length };
   }
   restart(topicId) {
     this.clearProgress(topicId);
@@ -60,20 +82,25 @@ export class QuizStore {
   }
   saveProgress() {
     try {
-      localStorage.setItem("csq-" + this.topicId, JSON.stringify({ answers: this.answers, revealed: this.revealed }));
+      localStorage.setItem(
+        "csq-" + this.topicId,
+        JSON.stringify({ order: this.order, answers: this.answers, revealed: this.revealed })
+      );
     } catch {
       /* private-only mode: progress simply won't persist */
     }
   }
 }
 
-export function readProgress(topicId, total) {
+export function readProgress(topicId, poolSize) {
   try {
     const raw = localStorage.getItem("csq-" + topicId);
     if (!raw) return null;
     const data = JSON.parse(raw);
-    if (!Array.isArray(data.answers) || !Array.isArray(data.revealed)) return null;
-    if (data.answers.length !== total || data.revealed.length !== total) return null;
+    if (!Array.isArray(data.order) || data.order.length === 0 || data.order.length > ROUND_SIZE) return null;
+    if (!data.order.every((n) => Number.isInteger(n) && n >= 0 && n < poolSize)) return null;
+    if (!Array.isArray(data.answers) || data.answers.length !== data.order.length) return null;
+    if (!Array.isArray(data.revealed) || data.revealed.length !== data.order.length) return null;
     return data;
   } catch {
     return null;
