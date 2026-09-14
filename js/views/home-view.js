@@ -1,6 +1,6 @@
 import { escapeHtml } from "../html.js";
 
-export function renderHome(els, show, topics, readBest, onStart) {
+export function renderHome(els, show, topics, readBest, progressOf, onStart) {
   els.circles.innerHTML = "";
   els.segG.style.width = "0";
   els.segR.style.width = "0";
@@ -14,8 +14,14 @@ export function renderHome(els, show, topics, readBest, onStart) {
     '<div class="grid">' +
     ids
       .map((id) => {
+        const total = topics[id].questions.length;
+        const done = progressOf(id);
         const best = readBest(id);
-        const sub = best ? "Best: " + escapeHtml(best) : "20 questions";
+        const bits = [];
+        if (done > 0 && done < total) bits.push("Resume — " + done + "/" + total);
+        else if (done >= total) bits.push("Completed");
+        else bits.push(total + " questions");
+        if (best) bits.push("Best: " + best);
         return (
           '<div class="card" data-t="' +
           id +
@@ -24,7 +30,7 @@ export function renderHome(els, show, topics, readBest, onStart) {
           "</h3><p>" +
           escapeHtml(topics[id].desc) +
           '</p><div class="n">' +
-          sub +
+          escapeHtml(bits.join(" · ")) +
           "</div></div>"
         );
       })

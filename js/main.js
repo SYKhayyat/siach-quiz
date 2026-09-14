@@ -1,6 +1,6 @@
 import { topics } from "../data/all.js";
 import { Timer } from "./timer.js";
-import { QuizStore, readBest, writeBest } from "./store.js";
+import { QuizStore, readBest, readProgress, writeBest } from "./store.js";
 import { renderHome } from "./views/home-view.js";
 import { renderQuiz, scrollToQuestion, handleQuizKey } from "./views/quiz-view.js";
 import { renderResult } from "./views/result-view.js";
@@ -34,11 +34,18 @@ function show(name) {
   els.result.classList.toggle("hidden", name !== "result");
 }
 
+function progressOf(topicId) {
+  const total = topics[topicId].questions.length;
+  const saved = readProgress(topicId, total);
+  if (!saved) return 0;
+  return saved.revealed.filter(Boolean).length;
+}
+
 function openHome() {
   quizHooks = null;
   document.removeEventListener("keydown", onKeyDown);
   timer.reset();
-  renderHome(els, show, topics, readBest, openQuiz);
+  renderHome(els, show, topics, readBest, progressOf, openQuiz);
 }
 
 function refreshQuiz() {
@@ -74,6 +81,7 @@ function finishQuiz() {
   quizHooks = null;
   document.removeEventListener("keydown", onKeyDown);
   writeBest(store.topicId, right + "/" + total);
+  store.clearProgress();
   renderResult(els, show, store, timer.elapsedMs(), {
     onRetry: () => openQuiz(store.topicId),
     onHome: openHome,

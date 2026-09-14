@@ -16,8 +16,16 @@ export class QuizStore {
     this.topicId = topicId;
     this.pos = 0;
     const total = this.current().questions.length;
-    this.answers = Array(total).fill(null);
-    this.revealed = Array(total).fill(false);
+    const saved = readProgress(topicId, total);
+    if (saved) {
+      this.answers = saved.answers;
+      this.revealed = saved.revealed;
+      this.pos = this.revealed.indexOf(false);
+      if (this.pos < 0) this.pos = 0;
+    } else {
+      this.answers = Array(total).fill(null);
+      this.revealed = Array(total).fill(false);
+    }
   }
   answer(qi, choice) {
     if (this.revealed[qi]) return false;
@@ -39,12 +47,36 @@ export class QuizStore {
     });
     return { right, wrong, done, total: questions.length };
   }
+  restart(topicId) {
+    this.clearProgress(topicId);
+    this.start(topicId);
+  }
+  clearProgress(topicId) {
+    try {
+      localStorage.removeItem("csq-" + (topicId || this.topicId));
+    } catch {
+      /* private-only mode: nothing persisted anyway */
+    }
+  }
   saveProgress() {
     try {
       localStorage.setItem("csq-" + this.topicId, JSON.stringify({ answers: this.answers, revealed: this.revealed }));
     } catch {
       /* private-only mode: progress simply won't persist */
     }
+  }
+}
+
+export function readProgress(topicId, total) {
+  try {
+    const raw = localStorage.getItem("csq-" + topicId);
+    if (!raw) return null;
+    const data = JSON.parse(raw);
+    if (!Array.isArray(data.answers) || !Array.isArray(data.revealed)) return null;
+    if (data.answers.length !== total || data.revealed.length !== total) return null;
+    return data;
+  } catch {
+    return null;
   }
 }
 
