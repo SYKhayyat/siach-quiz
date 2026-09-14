@@ -38,5 +38,6 @@ questions: [
 {q: "ASCII 'A' is 65, 'a' is 97 — flipping case is…", choices: ["+1", "XOR with 32 (bit 5 toggles case)", "−65", "Impossible"], answer: 1, why: "Upper/lowercase differ only in bit 5 — <code>c ^ 32</code> toggles it.", tag: "Encoding"},
 {q: "A multiplexer (MUX)…", choices: ["Adds numbers", "Selects one of N inputs via control lines", "Stores bits", "Clocks"], answer: 1, why: "The selector behind ALUs, register files, and cache way-picking.", tag: "Logic"},
 {q: "D flip-flop stores…", choices: ["A byte", "One bit on the clock edge — the register building block", "An instruction", "A packet"], answer: 1, why: "Edge-triggered capture turns combinational logic into state machines.", tag: "Logic"},
-{q: "CRC/checksums catch…", choices: ["All errors", "Random transmission corruption with high probability (not malice — use HMAC)", "Viruses", "Deadlock"], answer: 1, why: "Redundant math over the payload; cryptographic hashes add tamper-resistance.", tag: "IO"}
+{q: "CRC/checksums catch…", choices: ["All errors", "Random transmission corruption with high probability (not malice — use HMAC)", "Viruses", "Deadlock"], answer: 1, why: "Redundant math over the payload; cryptographic hashes add tamper-resistance.", tag: "IO"},
+{q: "Two's complement negation <code>~x + 1</code> of <code>5 (0101)</code> gives…", choices: ["<code>1010</code>", "<code>1011</code> (−5)", "<code>0101</code>", "<code>1111</code>"], answer: 1, why: "Invert (1010) then add one → 1011 = −5. Same circuit adds and subtracts.", tag: "Bits"}
 ]};
