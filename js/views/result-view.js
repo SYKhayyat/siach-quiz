@@ -24,10 +24,11 @@ export function renderResult(els, show, store, elapsedMs, hooks) {
       const detail = store.isMC(i)
         ? "you picked <b>" + s.you + "</b>, answer <b>" + s.expected + "</b>"
         : s.you + (s.ok || store.isCode(i) ? "" : "<br>Accepted: <b>" + s.expected + "</b>");
+      const note = !s.ok && s.note ? "<br>Why that pick fails: " + escapeHtml(s.note) : "";
       return (
         '<div class="rev-item">' +
         (s.ok ? '<b class="g">✓</b>' : '<b class="r">✕</b>') +
-        " Q" + (i + 1) + " <small>(" + kind + secs + ")</small> — " + detail +
+        " Q" + (i + 1) + " <small>(" + kind + secs + ")</small> — " + detail + note +
         "<br>" + q.why + "</div>"
       );
     })
@@ -36,9 +37,11 @@ export function renderResult(els, show, store, elapsedMs, hooks) {
     '<div class="result"><h2>' + escapeHtml(topic.title) + " — done</h2>" +
     '<div class="score">' + right + "/" + total + "</div>" +
     '<div class="sub">' + pct + "% · " + wrong + " wrong · time <b>" + Timer.formatClock(elapsedMs) + "</b> (" + Timer.formatLong(elapsedMs) + ", avg " + avg + "s/question) · " + grade(pct) + "</div>" +
-    '<div class="nav" style="justify-content:center;margin-top:16px"><button class="btn" id="retryBtn">Retry</button>' +
+    '<div class="nav" style="justify-content:center;margin-top:16px"><button class="btn" id="replayBtn">Retake this test</button>' +
+    '<button class="btn ghost" id="retryBtn">New test</button>' +
     '<button class="btn ghost" id="backBtn">All topics</button></div>' +
     '<div class="rev">' + review + "</div></div>";
+  els.result.querySelector("#replayBtn").addEventListener("click", hooks.onReplay);
   els.result.querySelector("#retryBtn").addEventListener("click", hooks.onRetry);
   els.result.querySelector("#backBtn").addEventListener("click", hooks.onHome);
   show("result");

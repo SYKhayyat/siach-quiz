@@ -19,14 +19,17 @@ function acceptedText(q) {
 export function answerSummary(store, i) {
   const q = store.itemAt(i);
   if (store.isMC(i)) {
+    const pick = store.answers[i];
+    const notes = store.itemAt(i).notes;
     return {
       ok: store.marks[i],
-      you: LETTERS[store.answers[i]],
+      you: LETTERS[pick],
       expected: LETTERS[store.correctSlot(i)],
+      note: !store.marks[i] && Array.isArray(notes) ? notes[pick] || "" : "",
     };
   }
   if (store.isCode(i)) {
-    return { ok: store.marks[i], you: "your code below", expected: q.answer || "" };
+    return { ok: store.marks[i], you: "your code below", expected: q.answer || "", note: "" };
   }
   if (Array.isArray(q.blanks) && q.blanks.length > 0) {
     const given = store.answers[i] || [];
@@ -36,10 +39,10 @@ export function answerSummary(store, i) {
       const got = given[bi] == null || given[bi] === "" ? "—" : String(given[bi]);
       return marks[bi] ? `Blank ${bi + 1}: ✓ <b>${escapeHtml(got)}</b>` : `Blank ${bi + 1}: ✕ you wrote <b>${escapeHtml(got)}</b> — accepted: <b>${escapeHtml(acc)}</b>`;
     });
-    return { ok: store.marks[i], you: lines.join("<br>"), expected: acceptedText(q) };
+    return { ok: store.marks[i], you: lines.join("<br>"), expected: acceptedText(q), note: "" };
   }
   const got = store.answers[i] == null || store.answers[i] === "" ? "—" : String(store.answers[i]);
-  return { ok: store.marks[i], you: got, expected: acceptedText(q) };
+  return { ok: store.marks[i], you: got, expected: acceptedText(q), note: store.marks[i] ? "" : store.traps[i] || "" };
 }
 
 function optionHTML(store, qi, slot) {
@@ -92,7 +95,9 @@ function feedbackHTML(store, qi) {
     head = s.ok ? "Correct." : "Not quite — accepted answer: <b>" + escapeHtml(s.expected) + "</b>.";
   }
   return (
-    '<div class="feed show ' + (s.ok ? "g" : "r") + '">' + head + '<span class="why">' + q.why + "</span>" + '<span class="why time">Answered in ' + fmtSecs(store.qTimes[qi]) + ".</span></div>"
+    '<div class="feed show ' + (s.ok ? "g" : "r") + '">' + head +
+    (s.note ? '<span class="why pick-note">Your pick: ' + escapeHtml(s.note) + "</span>" : "") +
+    '<span class="why">' + q.why + "</span>" + '<span class="why time">Answered in ' + fmtSecs(store.qTimes[qi]) + ".</span></div>"
   );
 }
 
@@ -192,6 +197,15 @@ export function readGradeInput(store) {
     return { empty: values.every((v) => v.trim() === ""), value: values };
   }
   return { empty: true };
+}
+
+export function freezeCircles(els, store) {
+  els.circles.innerHTML = store.round
+    .map(
+      (_, i) =>
+        '<div class="c' + (store.marks[i] ? " pass" : " fail") + '">' + (i + 1) + "</div>"
+    )
+    .join("");
 }
 
 export function scrollToQuestion(qi) {

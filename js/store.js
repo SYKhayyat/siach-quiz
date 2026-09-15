@@ -39,6 +39,7 @@ export class QuizStore {
     this.revealed = [];
     this.marks = [];
     this.blanks = [];
+    this.traps = [];
     this.codeMsg = [];
     this.qTimes = [];
     this.view = 0;
@@ -92,6 +93,7 @@ export class QuizStore {
       this.revealed = saved.revealed;
       this.marks = saved.marks;
       this.blanks = saved.blanks;
+      this.traps = saved.traps;
       this.codeMsg = saved.codeMsg;
       this.qTimes = saved.qTimes;
       this.mix = saved.mix;
@@ -107,6 +109,7 @@ export class QuizStore {
       this.revealed = Array(this.round.length).fill(false);
       this.marks = Array(this.round.length).fill(null);
       this.blanks = Array(this.round.length).fill(null);
+      this.traps = Array(this.round.length).fill("");
       this.codeMsg = Array(this.round.length).fill("");
       this.qTimes = Array(this.round.length).fill(null);
       this.mix = { text: t };
@@ -137,6 +140,7 @@ export class QuizStore {
     this.answers[i] = input;
     this.marks[i] = result.pass;
     this.blanks[i] = result.marks;
+    this.traps[i] = result.trap || "";
     this.revealed[i] = true;
     this.stamp(i);
     this.saveProgress();
@@ -166,6 +170,19 @@ export class QuizStore {
     }
     return { right, wrong, done, total: this.round.length };
   }
+  replay() {
+    this.answers = Array(this.round.length).fill(null);
+    this.revealed = Array(this.round.length).fill(false);
+    this.marks = Array(this.round.length).fill(null);
+    this.blanks = Array(this.round.length).fill(null);
+    this.traps = Array(this.round.length).fill("");
+    this.codeMsg = Array(this.round.length).fill("");
+    this.qTimes = Array(this.round.length).fill(null);
+    this.pending = null;
+    this.view = 0;
+    this.touchTimer();
+    this.saveProgress();
+  }
   clearProgress(topicId) {
     try {
       localStorage.removeItem("csq-" + (topicId || this.topicId));
@@ -185,6 +202,7 @@ export class QuizStore {
           revealed: this.revealed,
           marks: this.marks,
           blanks: this.blanks,
+          traps: this.traps,
           codeMsg: this.codeMsg,
           qTimes: this.qTimes,
         })
@@ -218,6 +236,7 @@ export function readProgress(topicId, mcPool, txPool) {
     if (!Array.isArray(data.marks) || data.marks.length !== n) return null;
     if (!Array.isArray(data.qTimes) || data.qTimes.length !== n) return null;
     data.blanks = Array.isArray(data.blanks) && data.blanks.length === n ? data.blanks : Array(n).fill(null);
+    data.traps = Array.isArray(data.traps) && data.traps.length === n ? data.traps : Array(n).fill("");
     data.codeMsg = Array.isArray(data.codeMsg) && data.codeMsg.length === n ? data.codeMsg : Array(n).fill("");
     data.mix = data.mix && Number.isInteger(data.mix.text) ? data.mix : { text: 0 };
     return data;

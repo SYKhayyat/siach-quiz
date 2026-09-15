@@ -77,6 +77,15 @@ function refreshQuiz(keepScroll) {
 function openQuiz(topicId, textCount) {
   store.start(topicId, textCount);
   lastMix = textCount;
+  startRound();
+}
+
+function replayQuiz() {
+  store.replay();
+  startRound();
+}
+
+function startRound() {
   timer.reset();
   timer.start();
   quizHooks = {
@@ -157,6 +166,7 @@ function finishQuiz() {
   store.clearProgress();
   freezeCircles(els, store);
   renderResult(els, show, store, timer.elapsedMs(), {
+    onReplay: replayQuiz,
     onRetry: () => openQuiz(store.topicId, lastMix),
     onHome: openHome,
   });

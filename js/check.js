@@ -57,11 +57,23 @@ export function checkBlanks(specs, givens) {
   return specs.map((spec, i) => matchesOne(spec, givens[i]));
 }
 
+export function findTrap(question, given) {
+  if (!Array.isArray(question.traps)) return "";
+  const g = Array.isArray(given) ? given.join(" ") : given;
+  for (const t of question.traps) {
+    if (!t || !t.match) continue;
+    if (matchesOne(t.match, g)) return t.note || "";
+  }
+  return "";
+}
+
 export function gradeTextAnswer(question, given) {
   if (Array.isArray(question.blanks) && question.blanks.length > 0) {
     const givens = Array.isArray(given) ? given : [given];
     const marks = checkBlanks(question.blanks, givens);
-    return { pass: marks.every(Boolean), marks };
+    const pass = marks.every(Boolean);
+    return { pass, marks, trap: "" };
   }
-  return { pass: matchesOne(question.check, given), marks: null };
+  const pass = matchesOne(question.check, given);
+  return { pass, marks: null, trap: pass ? "" : findTrap(question, given) };
 }
