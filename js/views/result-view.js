@@ -22,7 +22,7 @@ export function renderResult(els, show, store, elapsedMs, hooks) {
       const secs = store.qTimes[i] == null ? "" : " · " + Math.max(1, Math.round(store.qTimes[i] / 1000)) + "s";
       const kind = store.isMC(i) ? "Multiple choice" : store.isCode(i) ? "Code" : "Written";
       const detail = store.isMC(i)
-        ? "you picked <b>" + s.you + "</b>, answer <b>" + s.expected + "</b>"
+        ? "you picked <b>" + s.you + "</b> — " + store.choiceText(i, store.answers[i]) + "<br>answer <b>" + s.expected + "</b> — " + store.choiceText(i, store.correctSlot(i))
         : store.isCode(i)
           ? "your code:<pre class=\"code\">" + escapeHtml(store.answers[i] || "") + "</pre>" +
             (s.ok ? "" : "Expected approach: <b>" + escapeHtml(s.expected) + "</b>")
