@@ -30,7 +30,7 @@ export function renderResult(els, show, store, elapsedMs, hooks) {
       const note = !s.ok && s.note ? "<br>Why that pick fails: " + escapeHtml(s.note) : "";
       return (
         '<div class="rev-item">' +
-        (ok ? '<b class="g">✓</b>' : '<b class="r">✕</b>') +
+        (s.ok ? '<b class="g">✓</b>' : '<b class="r">✕</b>') +
         " Q" + (i + 1) + " <small>(" + kind + secs + ")</small>" +
         '<div class="rq">' + q.q + "</div>" + detail + note +
         "<br>" + q.why + "</div>"
