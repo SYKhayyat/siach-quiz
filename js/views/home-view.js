@@ -10,20 +10,18 @@ export function renderHome(els, show, topics, readBest, progressOf, onStart) {
   els.scoreText.textContent = "";
   const ids = Object.keys(topics);
   els.home.innerHTML =
-    '<div class="hero"><h2>Pick a topic — 20 random questions each</h2>' +
-    "<p>Multiple choice, drawn fresh from a large pool every run. Answer to see instantly if you were right and why. Green/red bar on top tracks right vs wrong, thin blue bar tracks progress. Timer always runs. Tip: keys 1–4 / A–D answer, ← / → move.</p></div>" +
+    '<div class="hero"><h2>Pick a topic</h2>' +
+    "<p>20 questions per round, right-or-wrong with an explanation after each one. Your time always counts.</p></div>" +
     '<div class="grid">' +
     ids
       .map((id) => {
-        const pool = topics[id].questions.length;
-        const round = Math.min(pool, ROUND_SIZE);
+        const round = Math.min(topics[id].questions.length, ROUND_SIZE);
         const done = progressOf(id);
         const best = readBest(id);
         const bits = [];
         if (done > 0 && done < round) bits.push("Resume — " + done + "/" + round);
-        else if (done >= round) bits.push("Completed");
-        else bits.push(pool + " in pool · " + round + " sampled");
         if (best) bits.push("Best: " + best);
+        const sub = bits.length ? '<div class="n">' + escapeHtml(bits.join(" · ")) + "</div>" : "";
         return (
           '<div class="card" data-t="' +
           id +
@@ -31,9 +29,9 @@ export function renderHome(els, show, topics, readBest, progressOf, onStart) {
           escapeHtml(topics[id].title) +
           "</h3><p>" +
           escapeHtml(topics[id].desc) +
-          '</p><div class="n">' +
-          escapeHtml(bits.join(" · ")) +
-          "</div></div>"
+          "</p>" +
+          sub +
+          "</div>"
         );
       })
       .join("") +

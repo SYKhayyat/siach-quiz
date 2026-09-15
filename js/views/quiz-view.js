@@ -2,14 +2,21 @@ import { escapeHtml } from "../html.js";
 
 const LETTERS = "ABCD";
 
-function optionHTML(qi, text, ci, store) {
-  const question = store.questionAt(qi);
+function fmtSecs(ms) {
+  if (ms == null) return "–";
+  return Math.max(1, Math.round(ms / 1000)) + "s";
+}
+
+function optionHTML(store, qi, slot) {
   const revealed = store.revealed[qi];
+  const correct = store.correctSlot(qi);
   let cls = "opt";
   if (revealed) {
-    if (ci === question.answer) cls += " right";
-    else if (ci === store.answers[qi]) cls += " wrong";
+    if (slot === correct) cls += " right";
+    else if (slot === store.answers[qi]) cls += " wrong";
     else cls += " dim";
+  } else if (slot === store.pending) {
+    cls += " sel";
   }
   const disabled = revealed ? " disabled" : "";
   return (
@@ -17,44 +24,45 @@ function optionHTML(qi, text, ci, store) {
     cls +
     '"' +
     disabled +
-    ' data-q="' +
-    qi +
-    '" data-c="' +
-    ci +
+    ' data-c="' +
+    slot +
     '"><span class="k">' +
-    LETTERS[ci] +
+    LETTERS[slot] +
     "</span><span>" +
-    text +
+    store.choiceText(qi, slot) +
     "</span></button>"
   );
 }
 
-function feedbackHTML(question, selected) {
-  const ok = selected === question.answer;
+function feedbackHTML(store, qi) {
+  const correct = store.correctSlot(qi);
+  const ok = store.answers[qi] === correct;
   return (
     '<div class="feed show ' +
     (ok ? "g" : "r") +
     '">' +
-    (ok ? "Correct." : "Wrong — correct answer: <b>" + LETTERS[question.answer] + "</b>.") +
+    (ok ? "Correct." : "Wrong — correct answer: <b>" + LETTERS[correct] + "</b>.") +
     '<span class="why">' +
-    question.why +
-    "</span></div>"
+    store.questionAt(qi).why +
+    "</span>" +
+    '<span class="why time">Answered in ' +
+    fmtSecs(store.qTimes[qi]) +
+    ".</span></div>"
   );
 }
 
 function questionHTML(store, qi) {
   const topic = store.current();
   const question = store.questionAt(qi);
-  const total = store.size;
-  const options = question.choices.map((choice, ci) => optionHTML(qi, choice, ci, store)).join("");
-  const feed = store.revealed[qi] ? feedbackHTML(question, store.answers[qi]) : '<div class="feed"></div>';
-  const prev = qi > 0 ? '<button class="btn ghost" data-goto="' + (qi - 1) + '">← Prev</button>' : "";
-  const next = qi < total - 1 ? '<button class="btn ghost" data-goto="' + (qi + 1) + '">Next →</button>' : "";
+  const options = [0, 1, 2, 3].map((slot) => optionHTML(store, qi, slot)).join("");
+  const feed = store.revealed[qi] ? feedbackHTML(store, qi) : "";
   return (
     '<div class="q" id="q-' +
     qi +
     '"><div class="qhead"><span class="qnum">Q' +
     (qi + 1) +
+    " of " +
+    store.size +
     " · " +
     escapeHtml(topic.title) +
     '</span><span class="qtag">' +
@@ -67,11 +75,28 @@ function questionHTML(store, qi) {
     options +
     "</div>" +
     feed +
-    '<div class="nav">' +
-    prev +
-    next +
-    "</div></div>"
+    "</div>"
   );
+}
+
+function navHTML(store) {
+  const view = store.view;
+  const current = store.currentIndex();
+  const revealed = store.revealed[view];
+  let html = '<div class="nav">';
+  if (view > 0) html += '<button class="btn ghost" id="backBtn">← Back</button>';
+  if (!revealed) {
+    html +=
+      '<button class="btn" id="nextBtn"' +
+      (store.pending == null ? " disabled" : "") +
+      ">Next →</button>";
+  } else if (store.currentIndex() >= store.size) {
+    html += '<button class="btn" id="advBtn">See results →</button>';
+  } else {
+    html += '<button class="btn" id="advBtn">Continue →</button>';
+  }
+  html += '<button class="btn ghost" id="homeBtn">All topics</button></div>';
+  return html;
 }
 
 export function renderQuiz(els, show, store, hooks) {
@@ -85,20 +110,30 @@ export function renderQuiz(els, show, store, hooks) {
   els.circles.innerHTML = store.order
     .map((_, i) => {
       let cls = "c";
-      if (store.revealed[i]) cls += store.answers[i] === store.questionAt(i).answer ? " pass" : " fail";
-      if (i === store.pos) cls += " cur";
-      return '<div class="' + cls + '" data-i="' + i + '">' + (i + 1) + "</div>";
+      let clickable = true;
+      if (store.revealed[i]) {
+        cls += store.answers[i] === store.correctSlot(i) ? " pass" : " fail";
+      } else if (i === store.currentIndex()) {
+        cls += " cur";
+      } else {
+        cls += " todo";
+        clickable = false;
+      }
+      if (i === store.view) cls += " cur";
+      return '<div class="' + cls + '"' + (clickable ? ' data-i="' + i + '"' : "") + ">" + (i + 1) + "</div>";
     })
     .join("");
-  els.circles.querySelectorAll(".c").forEach((dot) => dot.addEventListener("click", () => hooks.onGoto(+dot.dataset.i)));
-  els.qwrap.innerHTML =
-    store.order.map((_, i) => questionHTML(store, i)).join("") +
-    '<div class="nav"><button class="btn" id="finishBtn"' +
-    (done < total ? " disabled" : "") +
-    '>Finish — see score</button><button class="btn ghost" id="homeBtn">All topics</button></div>';
-  els.qwrap.querySelectorAll(".opt").forEach((btn) => btn.addEventListener("click", () => hooks.onAnswer(+btn.dataset.q, +btn.dataset.c)));
-  els.qwrap.querySelectorAll("[data-goto]").forEach((btn) => btn.addEventListener("click", () => hooks.onGoto(+btn.dataset.goto)));
-  els.qwrap.querySelector("#finishBtn").addEventListener("click", hooks.onFinish);
+  els.circles.querySelectorAll("[data-i]").forEach((dot) => dot.addEventListener("click", () => hooks.onGoto(+dot.dataset.i)));
+  els.qwrap.innerHTML = questionHTML(store, store.view) + navHTML(store);
+  els.qwrap.querySelectorAll(".opt").forEach((btn) => {
+    if (!btn.disabled) btn.addEventListener("click", () => hooks.onSelect(+btn.dataset.c));
+  });
+  const nextBtn = els.qwrap.querySelector("#nextBtn");
+  if (nextBtn) nextBtn.addEventListener("click", hooks.onGrade);
+  const advBtn = els.qwrap.querySelector("#advBtn");
+  if (advBtn) advBtn.addEventListener("click", hooks.onAdvance);
+  const backBtn = els.qwrap.querySelector("#backBtn");
+  if (backBtn) backBtn.addEventListener("click", hooks.onStepBack);
   els.qwrap.querySelector("#homeBtn").addEventListener("click", hooks.onHome);
 }
 
@@ -111,13 +146,13 @@ const KEY_TO_CHOICE = { 1: 0, 2: 1, 3: 2, 4: 3, a: 0, b: 1, c: 2, d: 3 };
 
 export function handleQuizKey(event, store, hooks) {
   if (/^(input|textarea)$/i.test(event.target.tagName)) return;
-  const total = store.size;
   const key = event.key.toLowerCase();
-  if (key === "arrowright") {
-    hooks.onGoto(Math.min(store.pos + 1, total - 1));
+  if (key === "enter") {
+    if (store.revealed[store.view]) hooks.onAdvance();
+    else hooks.onGrade();
   } else if (key === "arrowleft") {
-    hooks.onGoto(Math.max(store.pos - 1, 0));
+    hooks.onStepBack();
   } else if (Object.hasOwn(KEY_TO_CHOICE, key)) {
-    if (!store.revealed[store.pos]) hooks.onAnswer(store.pos, KEY_TO_CHOICE[key]);
+    hooks.onSelect(KEY_TO_CHOICE[key]);
   }
 }

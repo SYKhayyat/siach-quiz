@@ -9,11 +9,11 @@
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<header>
-  <h1><a href="#" id="homeLink"><span>CS Quiz</span> · siachshai.online</a></h1>
+<header id="topbar">
   <div class="hrow">
+    <button class="btn ghost" id="topicsBtn">← Topics</button>
     <div class="bar" title="Correct (green) vs wrong (red)"><div class="seg-g" id="segG"></div><div class="seg-r" id="segR"></div></div>
-    <div class="meta"><span id="progText">pick a topic</span><span id="scoreText"></span><span id="timer" title="Elapsed time">00:00</span></div>
+    <div class="meta"><span id="progText"></span><span id="scoreText"></span><span id="timer" title="Elapsed time">00:00</span></div>
   </div>
   <div class="hrow push-down">
     <div class="bar-thin" title="Progress"><div id="progFill"></div></div>
@@ -25,7 +25,7 @@
   <section id="viewQuiz" class="hidden"><div id="questions"></div></section>
   <section id="viewResult" class="hidden"></section>
 </main>
-<footer>10 topics · large question pools · 20 sampled fresh every run · progress saved in this browser only</footer>
+<footer>10 topics · 20 questions per round · instant feedback</footer>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>

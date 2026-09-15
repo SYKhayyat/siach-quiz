@@ -14,10 +14,13 @@ export function renderResult(els, show, store, elapsedMs, hooks) {
   const topic = store.current();
   const { right, wrong, total } = store.counts();
   const pct = Math.round((right / total) * 100);
+  const times = store.qTimes.filter((t) => t != null);
+  const avg = times.length ? Math.round(times.reduce((a, b) => a + b, 0) / times.length / 1000) : 0;
   const review = store.order
     .map((_, i) => {
       const q = store.questionAt(i);
-      const ok = store.answers[i] === q.answer;
+      const ok = store.answers[i] === store.correctSlot(i);
+      const secs = store.qTimes[i] == null ? "" : " · " + Math.max(1, Math.round(store.qTimes[i] / 1000)) + "s";
       return (
         '<div class="rev-item">' +
         (ok ? '<b class="g">✓</b>' : '<b class="r">✕</b>') +
@@ -26,8 +29,10 @@ export function renderResult(els, show, store, elapsedMs, hooks) {
         " — you picked <b>" +
         LETTERS[store.answers[i]] +
         "</b>, answer <b>" +
-        LETTERS[q.answer] +
-        "</b><br>" +
+        LETTERS[store.correctSlot(i)] +
+        "</b>" +
+        secs +
+        "<br>" +
         q.why +
         "</div>"
       );
@@ -50,10 +55,12 @@ export function renderResult(els, show, store, elapsedMs, hooks) {
     Timer.formatClock(elapsedMs) +
     "</b> (" +
     Timer.formatLong(elapsedMs) +
-    ") · " +
+    ", avg " +
+    avg +
+    "s/question) · " +
     grade(pct) +
     "</div>" +
-    '<div class="nav" style="justify-content:center;margin-top:16px"><button class="btn" id="retryBtn">Retry (new random 20)</button>' +
+    '<div class="nav" style="justify-content:center;margin-top:16px"><button class="btn" id="retryBtn">Retry</button>' +
     '<button class="btn ghost" id="backBtn">All topics</button></div>' +
     '<div class="rev">' +
     review +

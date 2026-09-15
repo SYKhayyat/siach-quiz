@@ -8,6 +8,8 @@ import { renderResult } from "./views/result-view.js";
 const $ = (id) => document.getElementById(id);
 
 const els = {
+  topbar: $("topbar"),
+  topicsBtn: $("topicsBtn"),
   home: $("viewHome"),
   quiz: $("viewQuiz"),
   result: $("viewResult"),
@@ -32,11 +34,13 @@ function show(name) {
   els.home.classList.toggle("hidden", name !== "home");
   els.quiz.classList.toggle("hidden", name !== "quiz");
   els.result.classList.toggle("hidden", name !== "result");
+  els.topbar.classList.toggle("idle", name === "home");
+  els.topicsBtn.style.display = name === "home" ? "none" : "";
 }
 
 function progressOf(topicId) {
-  const total = topics[topicId].questions.length;
-  const saved = readProgress(topicId, total);
+  const pool = topics[topicId].questions.length;
+  const saved = readProgress(topicId, pool);
   if (!saved) return 0;
   return saved.revealed.filter(Boolean).length;
 }
@@ -48,8 +52,10 @@ function openHome() {
   renderHome(els, show, topics, readBest, progressOf, openQuiz);
 }
 
-function refreshQuiz() {
+function refreshQuiz(keepScroll) {
+  const y = keepScroll ? window.scrollY : 0;
   renderQuiz(els, show, store, quizHooks);
+  if (keepScroll) window.scrollTo(0, y);
 }
 
 function openQuiz(topicId) {
@@ -57,19 +63,51 @@ function openQuiz(topicId) {
   timer.reset();
   timer.start();
   quizHooks = {
-    onAnswer: (qi, choice) => {
-      if (store.answer(qi, choice)) refreshQuiz();
+    onSelect: (slot) => {
+      if (store.revealed[store.view]) return;
+      store.pending = slot;
+      refreshQuiz(true);
+    },
+    onGrade: () => {
+      const v = store.view;
+      if (store.revealed[v] || store.pending == null) return;
+      store.answer(v, store.pending);
+      store.pending = null;
+      refreshQuiz(true);
+    },
+    onAdvance: () => {
+      if (store.currentIndex() >= store.size) {
+        finishQuiz();
+        return;
+      }
+      store.view = store.currentIndex();
+      store.touchTimer();
+      refreshQuiz(false);
+      scrollToQuestion(store.view);
+    },
+    onStepBack: () => {
+      if (store.view <= 0) return;
+      store.view -= 1;
+      refreshQuiz(false);
+      scrollToQuestion(store.view);
     },
     onGoto: (i) => {
-      store.pos = i;
-      refreshQuiz();
+      const current = store.currentIndex();
+      if (store.revealed[i]) {
+        store.view = i;
+      } else if (i === current) {
+        store.view = i;
+        store.touchTimer();
+      } else {
+        return;
+      }
+      refreshQuiz(false);
       scrollToQuestion(i);
     },
-    onFinish: finishQuiz,
     onHome: openHome,
   };
-  refreshQuiz();
-  window.scrollTo({ top: 0 });
+  refreshQuiz(false);
+  window.scrollTo(0, 0);
   document.removeEventListener("keydown", onKeyDown);
   document.addEventListener("keydown", onKeyDown);
 }
@@ -88,9 +126,6 @@ function finishQuiz() {
   });
 }
 
-$("homeLink").addEventListener("click", (event) => {
-  event.preventDefault();
-  openHome();
-});
+els.topicsBtn.addEventListener("click", openHome);
 
 openHome();
