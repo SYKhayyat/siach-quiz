@@ -5,7 +5,7 @@ questions: [
 {q: "A stack is…", choices: ["FIFO", "LIFO", "Sorted", "Random"], answer: 1, why: "Stack = last-in first-out: <code>push/pop</code> at one end. Queues are FIFO.", tag: "Stacks"},
 {q: "A queue's two operations are…", choices: ["push/pop", "enqueue/dequeue", "insert/sort", "open/close"], answer: 1, why: "Enqueue at the back, dequeue from the front — FIFO order.", tag: "Queues"},
 {q: "Singly linked list insertion at head is…", choices: ["O(1)", "O(n)", "O(log n)", "O(n²)"], answer: 0, why: "Just rewire a couple of pointers; no shifting like arrays.", tag: "Linked lists"},
-{q: "Finding an element in an unsorted linked list is…", choices: ["O(1)", "O(log n)", "O(n)", "O(0)"], answer: 2, why: "No index arithmetic — you must walk node by node.", tag: "Linked lists"},
+{q: "Finding an element in an unsorted linked list is…", choices: ["O(1)", "O(log n)", "O(n)", "O(n log n)"], answer: 2, why: "No index arithmetic — you must walk node by node.", tag: "Linked lists"},
 {q: "In a max-heap, the maximum lives…", choices: ["At the root", "At a leaf", "In the middle", "Anywhere"], answer: 0, why: "Heap invariant puts the extremum at index 0; insert/extract fix up in O(log n).", tag: "Heaps"},
 {q: "A binary search tree lookup averages…", choices: ["O(1)", "O(log n) if balanced", "O(n!) ", "O(2ⁿ)"], answer: 1, why: "Each step discards half the tree; degenerate (unbalanced) trees degrade to O(n).", tag: "Trees"},
 {q: "Which traversal yields sorted order on a BST?", choices: ["Preorder", "Inorder", "Postorder", "Level-order"], answer: 1, why: "Inorder (left, node, right) visits keys ascending.", tag: "Trees"},
@@ -39,5 +39,5 @@ questions: [
 {q: "Recursion depth danger is…", choices: ["Slow compare", "Stack overflow on deep/degenerate input (e.g. 10⁵-chain DFS)", "Heap exhaustion", "No risk"], answer: 1, why: "Each call burns a frame; convert to iteration or raise limits carefully.", tag: "Recursion"},
 {q: "Amortized analysis shows…", choices: ["Worst single op", "Average cost per op over a sequence (e.g. vector append O(1))", "Best case", "Memory use"], answer: 1, why: "Costly rare ops (resize) are spread over many cheap ones — the honest price of the pattern.", tag: "Analysis"},
 {q: "Sentinel/dummy head node…", choices: ["Wastes time", "Removes empty-list special cases in linked-list code", "Sorts", "Encrypts"], answer: 1, why: "With a permanent dummy, insert/delete never branch on head == null.", tag: "Linked lists"},
-{q: "When is a linked list the right call?", choices: ["Random access heavy", "Constant splicing of big elements with stable references (e.g. LRU, OS lists)", "Always", "Never in 2026"], answer: 1, why: "O(1) splice without shifting wins when order churns and indexes don't matter.", tag: "Linked lists"}
+{q: "When is a linked list the right call?", choices: ["Random access heavy", "Constant splicing of big elements with stable references (e.g. LRU, OS lists)", "Always", "Only in textbooks"], answer: 1, why: "O(1) splice without shifting wins when order churns and indexes don't matter.", tag: "Linked lists"}
 ]};
