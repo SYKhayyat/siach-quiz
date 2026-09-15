@@ -62,8 +62,12 @@ function openSetup(topicId) {
   document.removeEventListener("keydown", onKeyDown);
   timer.reset();
   const maxText = (topics[topicId].text || []).length;
-  renderSetup(els, show, topics[topicId], maxText, {
-    onStart: (n) => openQuiz(topicId, n),
+  renderSetup(els, show, topics[topicId], maxText, progressOf(topicId), {
+    onStart: (n) => {
+      store.clearProgress(topicId);
+      openQuiz(topicId, n);
+    },
+    onResume: () => openQuiz(topicId, 0),
     onHome: openHome,
   });
 }
