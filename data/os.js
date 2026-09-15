@@ -40,4 +40,18 @@ questions: [
 {q: "A Java runtime manages thousands of 'threads' the OS never sees. What are they?", choices: ["Identical to OS threads", "User threads scheduled by the runtime (cheaper switches)", "Threads that constantly syscall", "Threads sharing nothing at all"], answer: 1, why: "Many-to-one user threading avoids kernel crossings but one blocking call can stall all.", tag: "Threads"},
 {q: "Two CPUs increment the same counter with an instruction that cannot split. What is that property?", choices: ["Raw speed", "Atomicity: indivisible, appearing all-at-once", "Floating-point math", "Kernel privilege"], answer: 1, why: "Hardware guarantees no interleaving mid-op — the basis for lock-free primitives (CAS).", tag: "Sync"},
 {q: "System calls feel slower than plain function calls. Why?", choices: ["They are the same", "A syscall traps into the kernel for privileged ops", "Syscalls skip all checks", "Functions require root"], answer: 1, why: "User code requests kernel services (read/fork) via a trap; the CPU switches to privileged mode.", tag: "Kernels"}
+],
+text: [
+{kind:"text", q:"Which program runs as PID 1 on a typical Linux box?", check:{values:["init", "systemd"]}, answer:"init (systemd on most distros)", why:"PID 1 is the ancestor of all processes and adopts orphans.", tag:"Unix"},
+{kind:"text", q:"fork() returns what value inside the child process? Answer with a number.", check:{type:"number", value:0}, answer:"0", why:"Child sees 0; the parent receives the child's PID.", tag:"Unix"},
+{kind:"text", q:"chmod 644 gives the owner which permissions? Answer like read and write.", check:{values:["read and write", "read/write", "rw"]}, answer:"read and write (rw-)", why:"6 = 4+2 = read+write; 4 = read-only; 7 adds execute.", tag:"Unix"},
+{kind:"text", q:"kill -9 sends which signal number? Answer with a number.", check:{type:"number", value:9}, answer:"9 (SIGKILL)", why:"9 is the uncatchable kill; 15 (SIGTERM) asks politely first.", tag:"Unix"},
+{kind:"text", q:"How many Coffman conditions must ALL hold for deadlock? Answer with a number.", check:{type:"number", value:4}, answer:"4", why:"Mutual exclusion, hold-and-wait, no preemption, circular wait — break any one.", tag:"Sync"},
+{kind:"text", q:"A typical x86 page is how many bytes? Answer with a number.", check:{type:"number", value:4096}, answer:"4096 (4 KB)", why:"4 KB pages are the classic size (huge pages: 2 MB / 1 GB).", tag:"Memory"},
+{kind:"text", q:"Which command prints a whole file to the terminal?", check:{values:["cat"]}, answer:"cat", why:"cat concatenates files to stdout; less pages, head/tail show ends.", tag:"Unix"},
+{kind:"text", q:"A zombie lingers until the parent calls which function?", check:{values:["wait"]}, answer:"wait()", why:"wait() reaps the exit status; until then the entry lingers.", tag:"Unix"},
+{kind:"text", q:"Which ls flag also shows hidden dotfiles?", check:{values:["-a", "-la", "ls -a"]}, answer:"-a", why:"-a shows all including dotfiles; -l adds the long format.", tag:"Unix"},
+{kind:"text", q:"In grep a.txt | sort, which single character connects the two commands?", check:{values:["|"]}, answer:"|", why:"The pipe wires one's stdout to the other's stdin.", tag:"Unix"},
+{kind:"text", q:"Fill the blank: permission rwx in octal is ___. Answer with a digit.", blanks:[{label:"octal", values:["7"], answer:"7"}], answer:"7", why:"r=4, w=2, x=1; 4+2+1 = 7.", tag:"Unix"},
+{kind:"text", q:"Each running process is identified by which three-letter id?", check:{values:["PID", "pid"]}, answer:"PID", why:"The kernel numbers every process; ps lists them.", tag:"Processes"}
 ]};

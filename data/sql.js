@@ -40,4 +40,18 @@ questions: [
 {q: "One-to-many is modeled by…", choices: ["Two PKs in one table", "FK in the 'many' table pointing at the 'one' PK", "A view", "Duplicating rows"], answer: 1, why: "e.g. orders.customer_id → customers.id; many-to-many needs a junction table.", tag: "Modeling"},
 {q: "<code>INTERSECT</code> and <code>EXCEPT</code> do what?", choices: ["Join sideways", "Set intersection / difference of query results", "Sort", "Create tables"], answer: 1, why: "Rows in both (INTERSECT) vs rows in first but not second (EXCEPT/MINUS).", tag: "SELECT"},
 {q: "Why is <code>SELECT *</code> discouraged in prod?", choices: ["Slower to type", "Breaks on schema change, wastes bandwidth, defeats covering indexes", "Returns too few rows", "It is deprecated"], answer: 1, why: "Name columns explicitly — stable contracts, less I/O, index-only scans.", tag: "SELECT"}
+],
+text: [
+{kind:"text", q:"Which keyword removes duplicate rows from a result?", check:{values:["DISTINCT"]}, answer:"DISTINCT", why:"SELECT DISTINCT collapses repeats; without it, duplicates stay.", tag:"SELECT"},
+{kind:"text", q:"SELECT COUNT(*) on an empty table returns what number?", check:{type:"number", value:0}, answer:"0", why:"COUNT(*) counts rows — zero rows, zero count. (COUNT(col) also gives 0.)", tag:"Aggregation"},
+{kind:"text", q:"In standard SQL, NULL = NULL evaluates to what?", check:{values:["NULL", "UNKNOWN"]}, answer:"NULL (unknown)", why:"Three-valued logic: use IS NULL, never = NULL.", tag:"Semantics"},
+{kind:"text", q:"WHERE filters rows; which clause filters groups?", check:{values:["HAVING"]}, answer:"HAVING", why:"HAVING runs after GROUP BY on aggregate results.", tag:"Aggregation"},
+{kind:"text", q:"SELECT 6 * 7 returns what number?", check:{type:"number", value:42}, answer:"42", why:"Arithmetic works inline in SELECT.", tag:"SELECT"},
+{kind:"text", q:"Which keyword deletes every row but keeps the table?", check:{values:["DELETE"]}, answer:"DELETE (no WHERE)", why:"DELETE FROM t empties; DROP TABLE removes the table itself; TRUNCATE is the fast variant.", tag:"DML"},
+{kind:"text", q:"What does WHERE 1 = 1 do to the result?", check:{values:["nothing", "no filtering", "always true", "everything"]}, answer:"Nothing — every row passes", why:"A tautology filter; used as a placeholder when building dynamic WHERE clauses.", tag:"SELECT"},
+{kind:"text", q:"MySQL's default port is what number?", check:{type:"number", value:3306}, answer:"3306", why:"Postgres uses 5432. Know both.", tag:"Basics"},
+{kind:"text", q:"Which clause sorts a result?", check:{values:["ORDER BY"]}, answer:"ORDER BY", why:"ORDER BY col [ASC|DESC]; without it, row order is undefined.", tag:"SELECT"},
+{kind:"text", q:"Which JOIN keeps every left row even with no match?", check:{values:["LEFT JOIN", "LEFT OUTER JOIN"]}, answer:"LEFT JOIN", why:"Missing right sides become NULLs.", tag:"Joins"},
+{kind:"text", q:"Fill both blanks: a PRIMARY KEY column must be ___ and ___.", blanks:[{label:"first requirement", values:["UNIQUE", "unique"], answer:"UNIQUE"}, {label:"second requirement", values:["NOT NULL", "not null"], answer:"NOT NULL"}], answer:"UNIQUE and NOT NULL", why:"Entity integrity: every row identifiable, never missing its key.", tag:"Keys"},
+{kind:"text", q:"ACID's all-or-nothing letter is which one?", check:{values:["A", "Atomicity"]}, answer:"A (Atomicity)", why:"A=all-or-nothing, C=valid states, I=concurrent isolation, D=survives crashes.", tag:"Transactions"}
 ]};

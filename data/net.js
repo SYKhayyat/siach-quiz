@@ -40,4 +40,18 @@ questions: [
 {q: "Your dashboard polls an API every 2 s and lags behind live prices. What fundamentally changes with a WebSocket?", choices: ["The same polling, but faster", "One upgrade handshake, then full-duplex frames both ways", "The server polls you instead", "A newer, faster HTTP version"], answer: 1, why: "One handshake then frames both ways — chat, games, tickers; SSE covers server→client only. It is not an HTTP version.", tag: "Web"},
 {q: "You're on hotel Wi-Fi and need files from the office LAN. What do you set up?", choices: ["A faster hotel plan", "A VPN tunnel: encrypted encapsulation to the office endpoint", "An antivirus scan", "A new ISP account"], answer: 1, why: "Packets ride inside encrypted ones — privacy on hostile Wi-Fi, access to private nets. It changes your path, not your provider.", tag: "Security"},
 {q: "Traffic triples overnight; no user ever hits a dead backend. What's sitting in front?", choices: ["Pure luck", "A load balancer: round-robin, least-connections, consistent hashing", "DNS entries with no health checks", "One server per customer"], answer: 1, why: "Spread requests, health-check backends, pin sessions when state demands it. Bare DNS rotation cannot detect dead backends.", tag: "Ops"}
+],
+text: [
+{kind:"text", q:"Which IP address always means this machine?", check:{values:["127.0.0.1", "localhost"]}, answer:"127.0.0.1 (localhost)", why:"The loopback range 127.x.x.x never leaves the host.", tag:"IP"},
+{kind:"text", q:"Plain HTTP defaults to which port number?", check:{type:"number", value:80}, answer:"80", why:"80 = HTTP, 443 = HTTPS, 22 = SSH, 53 = DNS.", tag:"Transport"},
+{kind:"text", q:"HTTPS defaults to which port number?", check:{type:"number", value:443}, answer:"443", why:"TLS-wrapped HTTP; browsers assume it from https:// URLs.", tag:"Security"},
+{kind:"text", q:"DNS queries normally use which port? Answer with a number.", check:{type:"number", value:53}, answer:"53 (usually UDP)", why:"Port 53, UDP for small queries, TCP for large transfers.", tag:"DNS"},
+{kind:"text", q:"A /24 network offers how many usable host addresses? Answer with a number.", check:{type:"number", value:254}, answer:"254", why:"256 addresses minus network and broadcast.", tag:"IP"},
+{kind:"text", q:"2 to the power of 8 is what number?", check:{type:"number", value:256}, answer:"256", why:"One byte holds 256 values (0–255).", tag:"Bits"},
+{kind:"text", q:"ping relies on which protocol?", check:{values:["ICMP"]}, answer:"ICMP", why:"Echo request/reply ride on ICMP, beside TCP/UDP.", tag:"Tools"},
+{kind:"text", q:"Type any valid private IPv4 address.", check:{type:"regex", pattern:"^(192\\.168\\.\\d{1,3}\\.\\d{1,3}|10\\.\\d{1,3}\\.\\d{1,3}\\.\\d{1,3}|172\\.(1[6-9]|2\\d|3[01])\\.\\d{1,3}\\.\\d{1,3})$"}, answer:"e.g. 192.168.1.1", why:"Anything in 10/8, 172.16/12, or 192.168/16 qualifies.", tag:"IP"},
+{kind:"text", q:"A TCP handshake exchanges how many packets? Answer with a number.", check:{type:"number", value:3}, answer:"3 (SYN, SYN-ACK, ACK)", why:"Each direction synchronizes sequence numbers.", tag:"TCP"},
+{kind:"text", q:"A MAC address is how many bits long? Answer with a number.", check:{type:"number", value:48}, answer:"48 (6 bytes, shown as hex pairs)", why:"IPv4 is 32 bits; IPv6 is 128.", tag:"LAN"},
+{kind:"text", q:"Fill the blank: HTTP ___ means the resource was not found. Answer with the number.", blanks:[{label:"status code", values:["404"], answer:"404"}], answer:"404", why:"4xx codes are client errors; 404 is the famous one.", tag:"HTTP"},
+{kind:"text", q:"An IPv4 address is how many bits long? Answer with a number.", check:{type:"number", value:32}, answer:"32", why:"4 bytes dotted in decimal; v6 expands to 128.", tag:"IP"}
 ]};

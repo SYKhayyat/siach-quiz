@@ -40,4 +40,18 @@ questions: [
 {q: "What is <code>pathlib.Path('a') / 'b'</code>?", choices: ["Division", "Joins path segments → <code>a/b</code> portably", "An error", "A regex"], answer: 1, why: "The <code>/</code> operator overload builds OS-correct paths — modern replacement for <code>os.path.join</code>.", tag: "Stdlib"},
 {q: "What is the GIL's practical effect?", choices: ["True parallelism for threads", "CPython threads take turns: I/O overlaps, CPU-bound stays ~1 core", "No threads", "Faster GC"], answer: 1, why: "The Global Interpreter Lock serializes bytecode; use multiprocessing (or free-threaded builds) for CPU parallelism.", tag: "Concurrency"},
 {q: "What does <code>re.search(r'\\d+', s)</code> do?", choices: ["Replaces digits", "Finds the first run of digits", "Splits on digits", "Validates email"], answer: 1, why: "<code>search</code> scans for the first match anywhere; <code>match</code> anchors at the start; <code>fullmatch</code> needs all.", tag: "Stdlib"}
+],
+text: [
+{kind:"text", q:"You run print(2 ** 3 ** 2). What number appears?", check:{type:"number", value:512}, answer:"512", why:"** is right-associative: 3**2 = 9, then 2**9 = 512. Left-to-right would give 64 — wrong.", tag:"Operators"},
+{kind:"text", q:'How many characters are in "hello world"? (Answer with a number.)', check:{type:"number", value:11}, answer:"11", why:"The space counts: 5 + 1 + 5 = 11.", tag:"Strings"},
+{kind:"text", q:"What exactly does print(sorted([3, 1, 2])) show?", check:{values:["[1, 2, 3]"]}, answer:"[1, 2, 3]", why:"sorted() returns a new ascending list; spacing after commas is part of list repr.", tag:"Lists"},
+{kind:"text", q:'True or False: "a" in "abc" evaluates to True.', check:{values:["True"]}, answer:"True", why:"in tests substring membership for strings.", tag:"Strings"},
+{kind:"text", q:"What does bool([]) return?", check:{values:["False"]}, answer:"False", why:"Empty collections are falsy; non-empty ones are truthy.", tag:"Types"},
+{kind:"text", q:"Evaluate: 7 // 2 + 7 % 2. Answer with a number.", check:{type:"number", value:4}, answer:"4", why:"3 + 1 = 4. // floors, % takes the remainder.", tag:"Operators"},
+{kind:"text", q:'What does "hi" * 3 produce?', check:{values:["hihihi"]}, answer:"hihihi", why:"Sequence repetition concatenates copies.", tag:"Strings"},
+{kind:"text", q:"Which keyword exits the enclosing loop immediately?", check:{values:["break"]}, answer:"break", why:"break leaves the loop; continue skips to the next iteration.", tag:"Control"},
+{kind:"text", q:"Accessing a missing dict key raises which error?", check:{values:["KeyError"]}, answer:"KeyError", why:"Use d.get(k, default) or `in` checks to avoid it.", tag:"Dicts"},
+{kind:"text", q:"What list does list(range(2, 10, 3)) build?", check:{values:["[2, 5, 8]"]}, answer:"[2, 5, 8]", why:"Start 2, step 3, stop before 10.", tag:"Lists"},
+{kind:"text", q:"Fill both blanks to open mission.txt for writing: open(___, ___).", blanks:[{label:"filename", values:["'mission.txt'", '"mission.txt"', "mission.txt"], answer:"'mission.txt'"}, {label:"mode", values:["'w'", '"w"', "w"], answer:"'w'"}], answer:"open('mission.txt', 'w')", why:"First arg is the path, second the mode: 'w' writes (truncating), 'a' appends, 'r' reads.", tag:"Files"},
+{kind:"text", q:"What does round(2.675, 2) return? Answer exactly.", check:{values:["2.67"]}, answer:"2.67", why:"2.675 stored in binary is slightly less than 2.675, so it rounds down. Never trust floats for money.", tag:"Floats"}
 ]};

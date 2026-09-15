@@ -40,4 +40,18 @@ questions: [
 {q: "<code>List.of(1,2)</code> returns…", choices: ["ArrayList", "An unmodifiable list (mutating throws)", "LinkedList", "A set"], answer: 1, why: "Java 9+ factory methods give immutable snapshots; wrap/copy into <code>new ArrayList&lt;&gt;</code> to mutate.", tag: "Collections"},
 {q: "Covariant arrays problem: <code>String[]</code> is an <code>Object[]</code>, so…", choices: ["Always safe", "<code>objs[0] = 42</code> compiles but throws <code>ArrayStoreException</code> at runtime", "Compile error", "Primitives box"], answer: 1, why: "Arrays are reified and covariant (unlike generics) — the JVM checks stores dynamically.", tag: "Types"},
 {q: "Sealed classes (<code>sealed … permits</code>) give…", choices: ["No subclasses", "A closed, compiler-known set of subclasses — exhaustive switching", "Faster I/O", "Static only"], answer: 1, why: "The hierarchy is fixed at compile time, so pattern switches prove exhaustiveness.", tag: "OOP"}
+],
+text: [
+{kind:"text", q:"int x = 7 / 2; What value does x hold? Answer with a number.", check:{type:"number", value:2}, answer:"2", why:"int/int divides with truncation toward zero — the .5 is discarded, not rounded.", tag:"Types"},
+{kind:"text", q:'What exactly does System.out.println("a" + "b") print?', check:{values:["ab"]}, answer:"ab", why:"+ on strings concatenates.", tag:"Strings"},
+{kind:"text", q:"Which keyword makes a field a constant?", check:{values:["final"]}, answer:"final", why:"final forbids reassignment; static controls class-vs-instance ownership.", tag:"Basics"},
+{kind:"text", q:"Which method compares two strings by content?", check:{values:["equals"]}, answer:"equals", why:"== compares references; equals compares contents.", tag:"Strings"},
+{kind:"text", q:"Every slot of new int[5] starts as what number?", check:{type:"number", value:0}, answer:"0", why:"Fields and array slots get defaults (0/false/null); locals do not.", tag:"Arrays"},
+{kind:"text", q:'"Hello".length() returns what number?', check:{type:"number", value:5}, answer:"5", why:"length() counts UTF-16 code units.", tag:"Strings"},
+{kind:"text", q:"Which keyword skips to the next loop iteration?", check:{values:["continue"]}, answer:"continue", why:"continue skips ahead; break exits the loop entirely.", tag:"Control"},
+{kind:"text", q:'What does "abc".substring(1, 3) return?', check:{values:["bc"]}, answer:"bc", why:"Begin index inclusive, end index exclusive.", tag:"Strings"},
+{kind:"text", q:"Which keyword declares an interface?", check:{values:["interface"]}, answer:"interface", why:"Classes implement interfaces; interfaces extend interfaces.", tag:"OOP"},
+{kind:"text", q:"Dividing an int by zero throws which exception?", check:{values:["ArithmeticException"]}, answer:"ArithmeticException", why:"Unchecked — no mandatory catch. (Double division gives Infinity instead.)", tag:"Exceptions"},
+{kind:"text", q:"Fill both blanks so the loop prints 0 1 2 3 4: for (int i = ___; i < ___; i++).", blanks:[{label:"start", values:["0"], answer:"0"}, {label:"bound", values: ["5"], answer:"5"}], answer:"for (int i = 0; i < 5; i++)", why:"Start at 0, stop before 5: five iterations, 0 through 4.", tag:"Control"},
+{kind:"text", q:'"A".compareTo("B") returns a negative, zero, or positive number? Answer negative, zero, or positive.', check:{values:["negative"]}, answer:"negative (specifically -1)", why:"'A' (65) < 'B' (66), so the result is negative.", tag:"Strings"}
 ]};

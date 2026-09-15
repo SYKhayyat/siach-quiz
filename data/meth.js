@@ -40,4 +40,18 @@ questions: [
 {q: "A bug appeared sometime in the last 200 commits. How do you find the culprit fast?", choices: ["Cutting the repo in half by hand", "git bisect: binary search over history", "Reading 200 commit messages", "Trying each commit manually"], answer: 1, why: "Mark good/bad, git halves the range — O(log n) archaeology.", tag: "Git"},
 {q: "Your 2000-line PR sits unreviewed for a week. What was the mistake?", choices: ["Too little typing overall", "Too big to review: keep PRs small", "CI skips small changes", "Conflicts are now impossible"], answer: 1, why: "Keep to ~200 lines: reviewers actually read, discuss, and merge same-day.", tag: "Quality"},
 {q: "You rehearse Friday's migration on Thursday somewhere safe. Where?", choices: ["Against live production data", "Staging: a prod mirror for verification", "The backup tapes", "Production during tests"], answer: 1, why: "Rehearse migrations and flags where failure is cheap — with prod-like data volume.", tag: "Ops"}
+],
+text: [
+{kind:"text", q:"Red, green, then which step completes the TDD cycle?", check:{values:["refactor"]}, answer:"refactor", why:"Failing test, minimal pass, then clean up with tests guarding.", tag:"Testing"},
+{kind:"text", q:"Longest usual sprint length, in weeks? Answer with a number.", check:{type:"number", value:4}, answer:"4", why:"1–4 weeks is the Scrum range; longer loses feedback.", tag:"Scrum"},
+{kind:"text", q:"Which git command stages files? Answer with the full command.", check:{values:["git add"]}, answer:"git add", why:"add moves tree → index; commit snapshots index → HEAD.", tag:"Git"},
+{kind:"text", q:"Which git command shows history? Answer with the full command.", check:{values:["git log"]}, answer:"git log", why:"log walks HEAD's ancestry; status shows the working tree.", tag:"Git"},
+{kind:"text", q:"A breaking API change bumps which version part?", check:{values:["major"]}, answer:"MAJOR", why:"MAJOR = incompatible, MINOR = features, PATCH = fixes.", tag:"Release"},
+{kind:"text", q:"A daily standup should last about how many minutes? Answer with a number.", check:{type:"number", value:15}, answer:"15", why:"A sync pulse, not a design meeting — take details offline.", tag:"Scrum"},
+{kind:"text", q:"WIP on a Kanban board stands for work in ___?", check:{values:["progress"]}, answer:"progress", why:"Limiting work-in-progress is the mechanism that ships faster.", tag:"Agile"},
+{kind:"text", q:"MVP stands for minimum viable ___?", check:{values:["product"]}, answer:"product", why:"Smallest releasable version that validates learning.", tag:"Lean"},
+{kind:"text", q:"CI stands for continuous ___?", check:{values:["integration"]}, answer:"integration", why:"Frequent automated build + test on every push.", tag:"DevOps"},
+{kind:"text", q:"Above roughly how many lines should a PR be split? Answer with a number.", check:{type:"number", value:200, tolerance:100}, answer:"~200", why:"Reviewable in one sitting: read, discussed, merged same-day.", tag:"Quality"},
+{kind:"text", q:"Fill the blank in the TDD cycle: red, ___, refactor.", blanks:[{label:"middle step", values:["green"], answer:"green"}], answer:"green", why:"Red (fail), green (pass minimally), refactor (clean).", tag:"Testing"},
+{kind:"text", q:"Trunk-based developers merge to main how often? Answer with one word.", check:{values:["daily", "every day", "constantly", "continuously"]}, answer:"daily", why:"Tiny frequent merges plus flags beat long-lived branches.", tag:"Git"}
 ]};

@@ -40,4 +40,18 @@ questions: [
 {q: "D flip-flop stores…", choices: ["A byte", "One bit on the clock edge — the register building block", "An instruction", "A packet"], answer: 1, why: "Edge-triggered capture turns combinational logic into state machines.", tag: "Logic"},
 {q: "CRC/checksums catch…", choices: ["All errors", "Random transmission corruption with high probability (not malice — use HMAC)", "Viruses", "Deadlock"], answer: 1, why: "Redundant math over the payload; cryptographic hashes add tamper-resistance.", tag: "IO"},
 {q: "Two's complement negation <code>~x + 1</code> of <code>5 (0101)</code> gives…", choices: ["<code>1010</code>", "<code>1011</code> (−5)", "<code>0101</code>", "<code>1111</code>"], answer: 1, why: "Invert (1010) then add one → 1011 = −5. Same circuit adds and subtracts.", tag: "Bits"}
+],
+text: [
+{kind:"text", q:"Binary 1011 equals what decimal number?", check:{type:"number", value:11}, answer:"11", why:"8+0+2+1 = 11.", tag:"Bits"},
+{kind:"text", q:"Hex 0xFF equals what decimal number?", check:{type:"number", value:255}, answer:"255", why:"15×16 + 15 — one all-ones byte.", tag:"Bits"},
+{kind:"text", q:"2 to the 10th is what number?", check:{type:"number", value:1024}, answer:"1024", why:"1024 bytes = 1 KiB.", tag:"Bits"},
+{kind:"text", q:"An 8-bit cell holds how many distinct patterns? Answer with a number.", check:{type:"number", value:256}, answer:"256", why:"2⁸ = 256 (0–255 unsigned; −128–127 signed).", tag:"Bits"},
+{kind:"text", q:"Write NOT (A AND B) using only NOTs and OR.", check:{values:["(not a) or (not b)"]}, answer:"(NOT A) OR (NOT B)", why:"De Morgan: negation flips AND to OR.", tag:"Logic"},
+{kind:"text", q:"XOR is true in which case? Answer in a few words.", check:{values:["inputs differ", "exactly one", "exactly one is true", "one or the other"]}, answer:"exactly one input true", why:"Exclusive-or: one or the other, but not both.", tag:"Logic"},
+{kind:"text", q:"ASCII '0' is what decimal number?", check:{type:"number", value:48}, answer:"48", why:"Digits run 48–57; 'A' is 65, 'a' is 97.", tag:"Encoding"},
+{kind:"text", q:"A byte holds how many bits? Answer with a number.", check:{type:"number", value:8}, answer:"8", why:"The near-universal unit (some history used others).", tag:"Bits"},
+{kind:"text", q:"One kibibyte is how many bytes? Answer with a number.", check:{type:"number", value:1024}, answer:"1024", why:"KiB = 1024; KB (SI) = 1000 — vendors love the difference.", tag:"Bits"},
+{kind:"text", q:"In most languages, 0.1 + 0.2 === 0.3 is true or false?", check:{values:["false"]}, answer:"false", why:"Binary floats can't represent 0.1 exactly; compare with epsilon.", tag:"Floats"},
+{kind:"text", q:"Fill the blank: with NAND only, NOT A = A NAND ___.", blanks:[{label:"other input", values:["A", "a"], answer:"A"}], answer:"A NAND A", why:"NAND with tied inputs inverts — the seed of functional completeness.", tag:"Logic"},
+{kind:"text", q:"Little-endian stores the least-significant byte at which end of the address range?", check:{values:["lowest", "smallest", "first"]}, answer:"lowest address", why:"x86 is little-endian; network order is big-endian.", tag:"Bits"}
 ]};
