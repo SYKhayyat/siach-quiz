@@ -2,7 +2,8 @@ import { topics } from "../data/all.js";
 import { Timer } from "./timer.js";
 import { QuizStore, readBest, readProgress, writeBest } from "./store.js";
 import { renderHome } from "./views/home-view.js";
-import { renderQuiz, scrollToQuestion, handleQuizKey, freezeCircles } from "./views/quiz-view.js";
+import { renderSetup } from "./views/setup-view.js";
+import { renderQuiz, scrollToQuestion, handleQuizKey, freezeCircles, readGradeInput } from "./views/quiz-view.js";
 import { renderResult } from "./views/result-view.js";
 
 const $ = (id) => document.getElementById(id);
@@ -11,6 +12,7 @@ const els = {
   topbar: $("topbar"),
   topicsBtn: $("topicsBtn"),
   home: $("viewHome"),
+  setup: $("viewSetup"),
   quiz: $("viewQuiz"),
   result: $("viewResult"),
   qwrap: $("questions"),
@@ -25,6 +27,7 @@ const els = {
 const timer = new Timer($("timer"));
 const store = new QuizStore(topics);
 let quizHooks = null;
+let lastMix = 0;
 
 function onKeyDown(event) {
   if (quizHooks) handleQuizKey(event, store, quizHooks);
@@ -32,15 +35,17 @@ function onKeyDown(event) {
 
 function show(name) {
   els.home.classList.toggle("hidden", name !== "home");
+  els.setup.classList.toggle("hidden", name !== "setup");
   els.quiz.classList.toggle("hidden", name !== "quiz");
   els.result.classList.toggle("hidden", name !== "result");
-  els.topbar.classList.toggle("idle", name === "home");
-  els.topicsBtn.style.display = name === "home" ? "none" : "";
+  els.topbar.classList.toggle("idle", name === "home" || name === "setup");
+  els.topicsBtn.style.display = name === "home" || name === "setup" ? "none" : "";
 }
 
 function progressOf(topicId) {
   const pool = topics[topicId].questions.length;
-  const saved = readProgress(topicId, pool);
+  const txPool = (topics[topicId].text || []).length;
+  const saved = readProgress(topicId, pool, txPool);
   if (!saved) return 0;
   return saved.revealed.filter(Boolean).length;
 }
@@ -49,7 +54,18 @@ function openHome() {
   quizHooks = null;
   document.removeEventListener("keydown", onKeyDown);
   timer.reset();
-  renderHome(els, show, topics, readBest, progressOf, openQuiz);
+  renderHome(els, show, topics, readBest, progressOf, openSetup);
+}
+
+function openSetup(topicId) {
+  quizHooks = null;
+  document.removeEventListener("keydown", onKeyDown);
+  timer.reset();
+  const maxText = (topics[topicId].text || []).length;
+  renderSetup(els, show, topics[topicId], maxText, {
+    onStart: (n) => openQuiz(topicId, n),
+    onHome: openHome,
+  });
 }
 
 function refreshQuiz(keepScroll) {
@@ -58,22 +74,39 @@ function refreshQuiz(keepScroll) {
   if (keepScroll) window.scrollTo(0, y);
 }
 
-function openQuiz(topicId) {
-  store.start(topicId);
+function openQuiz(topicId, textCount) {
+  store.start(topicId, textCount);
+  lastMix = textCount;
   timer.reset();
   timer.start();
   quizHooks = {
     onSelect: (slot) => {
-      if (store.revealed[store.view]) return;
+      if (!store.isMC(store.view) || store.revealed[store.view]) return;
       store.pending = slot;
       refreshQuiz(true);
     },
-    onGrade: () => {
+    onGrade: async () => {
       const v = store.view;
-      if (store.revealed[v] || store.pending == null) return;
-      store.answer(v, store.pending);
-      store.pending = null;
-      refreshQuiz(true);
+      if (store.revealed[v]) return;
+      if (store.isMC(v)) {
+        if (store.pending == null) return;
+        store.answerMC(v, store.pending);
+        store.pending = null;
+        refreshQuiz(true);
+      } else if (store.isCode(v)) {
+        const input = readGradeInput(store);
+        const btn = els.qwrap.querySelector("#gradeBtn");
+        if (btn) {
+          btn.disabled = true;
+          btn.textContent = "Running…";
+        }
+        await store.answerCode(v, input.value || "");
+        refreshQuiz(true);
+      } else {
+        const input = readGradeInput(store);
+        store.answerText(v, input.value ?? "");
+        refreshQuiz(true);
+      }
       const feed = els.qwrap.querySelector(".feed.show");
       if (feed) feed.scrollIntoView({ behavior: "smooth", block: "nearest" });
     },
@@ -124,7 +157,7 @@ function finishQuiz() {
   store.clearProgress();
   freezeCircles(els, store);
   renderResult(els, show, store, timer.elapsedMs(), {
-    onRetry: () => openQuiz(store.topicId),
+    onRetry: () => openQuiz(store.topicId, lastMix),
     onHome: openHome,
   });
 }

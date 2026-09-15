@@ -11,7 +11,7 @@ export function renderHome(els, show, topics, readBest, progressOf, onStart) {
   const ids = Object.keys(topics);
   els.home.innerHTML =
     '<div class="hero"><h2>Pick a topic</h2>' +
-    "<p>20 questions per round, right-or-wrong with an explanation after each one. Your time always counts.</p></div>" +
+    "<p>20 questions per round — you choose how many are written. Graded after each one, with the reason why. Your time always counts.</p></div>" +
     '<div class="grid">' +
     ids
       .map((id) => {
