@@ -81,7 +81,6 @@ function questionHTML(store, qi) {
 
 function navHTML(store) {
   const view = store.view;
-  const current = store.currentIndex();
   const revealed = store.revealed[view];
   let html = '<div class="nav">';
   if (view > 0) html += '<button class="btn ghost" id="backBtn">← Back</button>';
@@ -109,17 +108,16 @@ export function renderQuiz(els, show, store, hooks) {
   els.scoreText.innerHTML = done ? "<b>" + right + "</b> right · <b>" + wrong + "</b> wrong" : "";
   els.circles.innerHTML = store.order
     .map((_, i) => {
+      const current = store.currentIndex();
       let cls = "c";
       let clickable = true;
       if (store.revealed[i]) {
         cls += store.answers[i] === store.correctSlot(i) ? " pass" : " fail";
-      } else if (i === store.currentIndex()) {
-        cls += " cur";
-      } else {
+      } else if (i !== current) {
         cls += " todo";
         clickable = false;
       }
-      if (i === store.view) cls += " cur";
+      if (i === current || i === store.view) cls += " cur";
       return '<div class="' + cls + '"' + (clickable ? ' data-i="' + i + '"' : "") + ">" + (i + 1) + "</div>";
     })
     .join("");

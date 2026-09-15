@@ -74,6 +74,8 @@ function openQuiz(topicId) {
       store.answer(v, store.pending);
       store.pending = null;
       refreshQuiz(true);
+      const feed = els.qwrap.querySelector(".feed.show");
+      if (feed) feed.scrollIntoView({ behavior: "smooth", block: "nearest" });
     },
     onAdvance: () => {
       if (store.currentIndex() >= store.size) {

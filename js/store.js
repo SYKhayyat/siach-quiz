@@ -27,7 +27,6 @@ export class QuizStore {
     this.answers = [];
     this.revealed = [];
     this.qTimes = [];
-    this.pos = 0;
     this.view = 0;
     this.pending = null;
     this.qStart = 0;
@@ -74,7 +73,6 @@ export class QuizStore {
       this.revealed = Array(this.order.length).fill(false);
       this.qTimes = Array(this.order.length).fill(null);
     }
-    this.pos = 0;
     this.pending = null;
     this.view = this.currentIndex();
     this.touchTimer();
