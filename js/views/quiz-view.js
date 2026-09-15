@@ -135,6 +135,19 @@ export function renderQuiz(els, show, store, hooks) {
   els.qwrap.querySelector("#homeBtn").addEventListener("click", hooks.onHome);
 }
 
+export function freezeCircles(els, store) {
+  els.circles.innerHTML = store.order
+    .map(
+      (_, i) =>
+        '<div class="c' +
+        (store.answers[i] === store.correctSlot(i) ? " pass" : " fail") +
+        '">' +
+        (i + 1) +
+        "</div>"
+    )
+    .join("");
+}
+
 export function scrollToQuestion(qi) {
   const el = document.getElementById("q-" + qi);
   if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });

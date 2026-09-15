@@ -2,7 +2,7 @@ import { topics } from "../data/all.js";
 import { Timer } from "./timer.js";
 import { QuizStore, readBest, readProgress, writeBest } from "./store.js";
 import { renderHome } from "./views/home-view.js";
-import { renderQuiz, scrollToQuestion, handleQuizKey } from "./views/quiz-view.js";
+import { renderQuiz, scrollToQuestion, handleQuizKey, freezeCircles } from "./views/quiz-view.js";
 import { renderResult } from "./views/result-view.js";
 
 const $ = (id) => document.getElementById(id);
@@ -122,6 +122,7 @@ function finishQuiz() {
   document.removeEventListener("keydown", onKeyDown);
   writeBest(store.topicId, right + "/" + total);
   store.clearProgress();
+  freezeCircles(els, store);
   renderResult(els, show, store, timer.elapsedMs(), {
     onRetry: () => openQuiz(store.topicId),
     onHome: openHome,
