@@ -23,12 +23,16 @@ export function renderResult(els, show, store, elapsedMs, hooks) {
       const kind = store.isMC(i) ? "Multiple choice" : store.isCode(i) ? "Code" : "Written";
       const detail = store.isMC(i)
         ? "you picked <b>" + s.you + "</b>, answer <b>" + s.expected + "</b>"
-        : s.you + (s.ok || store.isCode(i) ? "" : "<br>Accepted: <b>" + s.expected + "</b>");
+        : store.isCode(i)
+          ? "your code:<pre class=\"code\">" + escapeHtml(store.answers[i] || "") + "</pre>" +
+            (s.ok ? "" : "Expected approach: <b>" + escapeHtml(s.expected) + "</b>")
+          : s.you + (s.ok ? "" : "<br>Accepted: <b>" + s.expected + "</b>");
       const note = !s.ok && s.note ? "<br>Why that pick fails: " + escapeHtml(s.note) : "";
       return (
         '<div class="rev-item">' +
-        (s.ok ? '<b class="g">✓</b>' : '<b class="r">✕</b>') +
-        " Q" + (i + 1) + " <small>(" + kind + secs + ")</small> — " + detail + note +
+        (ok ? '<b class="g">✓</b>' : '<b class="r">✕</b>') +
+        " Q" + (i + 1) + " <small>(" + kind + secs + ")</small>" +
+        '<div class="rq">' + q.q + "</div>" + detail + note +
         "<br>" + q.why + "</div>"
       );
     })

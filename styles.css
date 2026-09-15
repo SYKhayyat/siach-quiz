@@ -95,5 +95,8 @@ header.idle{display:none}
 .blank{background:#0b0d11;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:9px 12px;font:inherit;font-size:14px;width:100%}
 .blank:focus{outline:none;border-color:var(--accent)}
 .rev-item small{color:var(--muted)}
+.rev-item .rq{margin:6px 0;font-size:14px}
+.rev-item .rq code{background:rgba(0,0,0,.3);border-radius:4px;padding:0 5px;font-size:13px}
+.rev-item pre.code{background:#0b0d11;border:1px solid var(--line);border-radius:8px;padding:10px;overflow:auto;font-size:12px;margin:8px 0}
 footer{text-align:center;color:var(--muted);font-size:12px;padding:20px}
 @media(max-width:560px){.meta{gap:8px}}
