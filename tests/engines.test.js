@@ -11,7 +11,7 @@ const jsCodeQuestions = Object.values(topics)
   .filter((q) => q.kind === "code" && (q.lang || "javascript") === "javascript");
 
 test("the three languages have engines registered", () => {
-  assert.deepEqual(engineLangs(), ["java", "javascript", "python"]);
+  assert.deepEqual(engineLangs(), ["java", "javascript", "python", "rust"]);
   assert.ok(hasEngine("python"));
   assert.ok(hasEngine("java"));
 });

@@ -53,9 +53,14 @@ function getWorker(onStatus) {
   return worker;
 }
 
-export function runInline(userCode, tests) {
+/**
+ * Same contract as the worker, without one. The tests are wrapped in an async
+ * function so `await` works here too (the concurrency questions rely on it).
+ */
+export async function runInline(userCode, tests) {
   try {
-    new Function("assert", `${String(userCode)}\n${String(tests)}`)((cond, msg) => {
+    const run = new Function("assert", `return (async () => {\n${String(userCode)}\n${String(tests)}\n})()`);
+    await run((cond, msg) => {
       if (!cond) throw new Error(msg || "Assertion failed");
     });
     return { pass: true, message: "" };
@@ -78,16 +83,19 @@ export default async function runJavaScript({ code, tests, onStatus }) {
       resolve(result);
     };
     let id;
+    let timer; // declared here so the fallback below can still settle safely
     try {
       const w = getWorker(onStatus);
       id = nextId++;
       pending.set(id, { resolve: finish });
       w.postMessage({ id, userCode: code, tests });
     } catch {
+      // No worker available: evaluate inline instead of failing the student.
       if (id !== undefined) pending.delete(id);
-      return finish(runInline(code, tests));
+      runInline(code, tests).then(finish);
+      return;
     }
-    const timer = setTimeout(() => {
+    timer = setTimeout(() => {
       pending.delete(id);
       teardownWorker();
       finish({ pass: false, message: "Timed out after 3s — check for an infinite loop." });

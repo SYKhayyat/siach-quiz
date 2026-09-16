@@ -1,4 +1,4 @@
-export default { title: "Architecture & Logic", desc: "Bits, CPU, memory hierarchy, discrete math for CS.",
+export default { title: "Architecture & Logic", desc: "Bits, CPU, memory hierarchy, discrete math for CS.", group: "Foundations",
 questions: [
 {q: "Your bitmask reads 1011. What decimal value is set?", choices: ["9", "11", "13", "7"], answer: 1, why: "8+0+2+1 = 11.", notes: ["That is 1001.", "", "That is 1101.", "That is 0111."], tag: "Bits"},
 {q: "A pixel channel maxes at 0xFF. What decimal is that?", choices: ["255", "256", "100", "15"], answer: 0, why: "15×16 + 15 — one all-ones byte.", notes: ["", "256 needs nine bits (0x100).", "0x64 is 100.", "15 is a single F."], tag: "Bits"},

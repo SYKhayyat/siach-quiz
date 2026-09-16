@@ -1,4 +1,4 @@
-export default { title: "Software Methodology", desc: "SDLC, Agile/Scrum, testing, Git, code quality.",
+export default { title: "Software Methodology", desc: "SDLC, Agile/Scrum, testing, Git, code quality.", group: "Systems & practice",
 questions: [
 {q: "Your requirements are frozen, signed, and 200 pages. Which process fits that world?", choices: ["Short sprints with demos", "Waterfall: sequential gated phases", "No documentation at all", "Deploying daily"], answer: 1, why: "Linear and document-heavy; late changes cost enormously.", notes: ["Sprints assume change is welcome.", "", "Waterfall documents the most.", "Daily deploys assume evolving scope."], tag: "SDLC"},
 {q: "Your startup pivots monthly on user feedback. What approach fits?", choices: ["No planning ever", "Agile: iterative delivery + feedback", "Scope locked forever", "Solo developers only"], answer: 1, why: "Working software frequently, adapt to change.", notes: ["Planning adapts; it doesn't vanish.", "", "Locked scope is waterfall.", "Teams of any size use Agile."], tag: "Agile"},

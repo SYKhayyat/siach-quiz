@@ -1,4 +1,4 @@
-export default { title: "Python", desc: "Syntax, data model, OOP, stdlib and idioms every graduate should know.",
+export default { title: "Python", desc: "Syntax, data model, OOP, stdlib and idioms every graduate should know.", group: "Languages",
 questions: [
 {q: "How many items does len([1, 2, 3]) report?", choices: ["2", "3", "4", "<code>TypeError</code>"], answer: 1, why: "Lists report their element count.", notes: ["Count again: 1, 2, 3 — three elements.", "", "Three elements, not four.", "len() works on any sequence; no error here."], tag: "Basics"},
 {q: "You need a reusable block named greet. Which keyword starts it?", choices: ["<code>func</code>", "<code>def</code>", "<code>fn</code>", "<code>function</code>"], answer: 1, why: "<code>def name(...):</code> defines a named function, which is a reusable block of code.", notes: ["func is Go's keyword.", "", "fn is Rust's keyword.", "function is JavaScript's keyword."], tag: "Basics"},

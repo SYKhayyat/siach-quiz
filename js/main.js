@@ -29,6 +29,7 @@ export function startApp() {
     progFill: $("progFill"),
     progText: $("progText"),
     scoreText: $("scoreText"),
+    topicBar: $("topicBar"),
   };
 
   const timer = new Timer($("timer"));

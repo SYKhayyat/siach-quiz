@@ -9,6 +9,7 @@
  *   javascript — runs in a worker (see ./javascript.js)
  *   python     — Pyodide, CPython compiled to WebAssembly (./python.js)
  *   java       — CheerpJ, a WebAssembly JVM running javac (./java.js)
+ *   rust       — the public Rust playground (./rust.js); the one remote engine
  *
  * Registering a new engine (or replacing one in tests) is a one-liner.
  */
@@ -16,6 +17,7 @@
 import runJavaScript from "./javascript.js";
 import runPython from "./python.js";
 import runJava from "./java.js";
+import runRust from "./rust.js";
 
 const engines = new Map();
 
@@ -37,10 +39,33 @@ export const LANG_LABELS = {
   javascript: "JavaScript",
   python: "Python",
   java: "Java",
+  rust: "Rust",
 };
 
 export function langLabel(lang) {
   return LANG_LABELS[lang] || String(lang || "code");
+}
+
+/**
+ * The only engines that execute somewhere else. Everything else runs in the
+ * student's browser, and the UI must not claim otherwise for these.
+ */
+export const REMOTE_LANGS = { rust: "the public Rust playground (play.rust-lang.org)" };
+
+export function isRemoteLang(lang) {
+  return Object.hasOwn(REMOTE_LANGS, lang);
+}
+
+/** The sentence shown above every code box, per language. */
+export function runLocation(lang) {
+  const label = langLabel(lang);
+  if (isRemoteLang(lang)) {
+    return (
+      "Runs on " + REMOTE_LANGS[lang] + " — a browser has no " + label + " compiler, so your code is sent there to compile and run. " +
+      "It is not stored, and Rust is the only language here that leaves your machine."
+    );
+  }
+  return "Runs in your browser — " + label + ", on your machine. Nothing is uploaded.";
 }
 
 /**
@@ -79,3 +104,4 @@ export async function runCodeTests({ lang = "javascript", code, tests, prelude, 
 registerEngine("javascript", runJavaScript);
 registerEngine("python", runPython);
 registerEngine("java", runJava);
+registerEngine("rust", runRust);

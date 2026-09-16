@@ -36,7 +36,8 @@ export function renderSetup(els, show, topic, maxText, savedDone, hooks) {
     '<p class="gradingnote"><b>How answers are graded:</b> written answers are checked against the accepted answer. ' +
     "Where the answer <i>is</i> the output — a literal, a value, syntax — capitalization and spelling both count: <code>none</code> is wrong for <code>None</code>, and a near miss is marked wrong with a note saying why. " +
     "Where the question asks for an idea, a small spelling slip (\"linked lis\") is accepted and the exact answer is shown. " +
-    "Coding answers are run for real in your browser and judged by their tests — JavaScript, Python and Java. Nothing is uploaded.</p>" +
+    "Numbers accept units and spelled-out words, so <code>eleven</code> counts for <code>11</code>. " +
+    "Coding answers are run for real and judged by their tests: JavaScript, Python and Java in your browser, Rust on the public Rust playground.</p>" +
     '<p class="gradingnote"><label class="aitoggle"><input type="checkbox" id="aiToggle"' + (readAIEnabled() ? " checked" : "") + ">" +
     "<span><b>Local AI review (optional, beta).</b> Off by default. When on, a concept answer the rules mark wrong can be " +
     "re-checked by a small language model running <i>on this device</i> (first use downloads it once; no key, no account, nothing sent). " +

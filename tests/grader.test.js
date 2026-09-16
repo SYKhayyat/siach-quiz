@@ -43,13 +43,29 @@ test("numbers accept units and filler words", () => {
   assert.equal(evaluate({ type: "number", value: 48 }, "no idea").hint, "No number found in that answer — write just the number.");
 });
 
+test("parseNumber understands spelled-out numbers too", () => {
+  assert.equal(parseNumber("eleven"), 11);
+  assert.equal(parseNumber("Eleven"), 11);
+  assert.equal(parseNumber("twenty-one"), 21);
+  assert.equal(parseNumber("one hundred and five"), 105);
+  assert.equal(parseNumber("two thousand"), 2000);
+  assert.equal(parseNumber("eleven packets"), 11);
+  assert.equal(parseNumber("the answer is eleven"), 11);
+  assert.equal(parseNumber("banana"), null);
+  // A spelled number that we read is still accepted, and told why.
+  const spelled = evaluate({ type: "number", value: 11 }, "eleven");
+  assert.equal(spelled.ok, true);
+  assert.equal(spelled.soft, true);
+  assert.match(spelled.hint, /11/);
+});
+
 test("parseNumber handles the awkward spellings", () => {
   assert.equal(parseNumber(""), null);
   assert.equal(parseNumber("48 bits"), 48);
   assert.equal(parseNumber("1,000"), 1000);
   assert.equal(parseNumber("1,5"), 1.5);
   assert.equal(parseNumber("0b1010"), 10);
-  assert.equal(parseNumber("twelve"), null);
+  assert.equal(parseNumber("twelve"), 12);
 });
 
 test("keywords accept a real sentence, not just one magic word", () => {

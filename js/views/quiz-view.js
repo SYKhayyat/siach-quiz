@@ -1,6 +1,6 @@
 import { escapeHtml } from "../html.js";
 import { acceptedAnswer, aiReviewAllowed, typoPolicy } from "../check.js";
-import { langLabel } from "../engines/index.js";
+import { isRemoteLang, langLabel, runLocation } from "../engines/index.js";
 import { readAIEnabled } from "../store.js";
 
 const LETTERS = "ABCD";
@@ -99,11 +99,14 @@ function textInputs(store, qi) {
 
 function codeInput(store, qi) {
   const q = store.itemAt(qi);
+  const lang = q.lang || "javascript";
   if (store.revealed[qi]) return '<pre class="code">' + escapeHtml(store.answers[qi] || "") + "</pre>";
   return (
-    '<p class="runnote">Runs in your browser — ' +
-    escapeHtml(langLabel(q.lang || "javascript")) +
-    ", on your machine. Nothing is uploaded.</p>" +
+    '<p class="runnote' +
+    (isRemoteLang(lang) ? " remote" : "") +
+    '">' +
+    escapeHtml(runLocation(lang)) +
+    "</p>" +
     '<textarea id="ta" class="codeta" rows="10" spellcheck="false">' +
     escapeHtml(q.starter || "") +
     "</textarea>" +
@@ -230,6 +233,7 @@ export function renderQuiz(els, show, store, hooks) {
   els.segR.style.width = (wrong / total) * 100 + "%";
   els.progFill.style.width = (done / total) * 100 + "%";
   els.progText.textContent = done + "/" + total + " answered";
+  if (els.topicBar) els.topicBar.textContent = store.current().title + " — question " + (store.view + 1) + " of " + total;
   els.scoreText.innerHTML = done ? "<b>" + right + "</b> right · <b>" + wrong + "</b> wrong" : "";
   els.circles.innerHTML = store.round
     .map((_, i) => {

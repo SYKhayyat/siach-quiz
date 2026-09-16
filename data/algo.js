@@ -1,4 +1,4 @@
-export default { title: "Algorithms", desc: "Big-O, sorting, searching, recursion, DP, graphs.",
+export default { title: "Algorithms", desc: "Big-O, sorting, searching, recursion, DP, graphs.", group: "Foundations",
 questions: [
 {q: "Your boss asks if the new algorithm is 'fast'. What does its Big-O actually tell you?", choices: ["Exact seconds on your laptop", "How cost grows with input (worst case)", "Memory usage only", "Best-case speed always"], answer: 1, why: "Big-O sketches growth as inputs grow, ignoring machine specifics — scalability, not stopwatch.", notes: ["Wall-clock needs benchmarks, not Big-O.", "", "Big-O covers time and space.", "Big-O is an upper bound, not best case."], tag: "Big-O"},
 {q: "Your O(n²) sort chokes at 1M rows. Which family guarantees n log n?", choices: ["Bubble, Insertion", "Merge, Heap, (good) Quick", "Everything is O(n²)", "Bogosort"], answer: 1, why: "Merge/Heap guarantee it; Quicksort averages it.", notes: ["Both are quadratic.", "", "The whole point of better sorts.", "Bogosort is a joke, not a bound."], tag: "Sorting"},

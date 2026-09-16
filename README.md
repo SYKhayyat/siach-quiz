@@ -1,6 +1,6 @@
 # CS Quiz — 20 questions, written answers included
 
-A static quiz site (no server, no build step) covering 10 computer science
+A static quiz site (no server, no build step) covering 12 computer science
 topics. Each round is 20 questions drawn from that topic's pool:
 
 - **Multiple choice** — four options, shuffled per question, with an explanation
@@ -23,7 +23,7 @@ rules are also stated on the setup screen so students know what is happening.
 | Case | **Significant by default.** `None`, `KeyError`, `GET`, `ABC` must be spelled the way the language spells them. A question can opt out with `caseSensitive: false`. |
 | Traps | A wrong answer that matches a known misconception gets the explanation for *that* misconception ("Case matters — upper() capitalizes"). |
 | Typos | Depends on the question. Where the answer *is* the output — a literal, a value, syntax, a flag, a command — one wrong character is **wrong**, and the feedback names the exact answer. Where the question asks for an **idea** ("Wi-Fi stands for what?", "which structure gives O(1) lookup?"), a one-letter slip is **accepted with a note** giving the exact spelling. A question can force either way with `typo: "strict"` or `typo: "accept"`. |
-| Numbers | Units and filler are ignored: `48`, `48 bits` and `about 48` all pass. Thousands/decimal commas and `0x30` are understood. Tolerance is per question. |
+| Numbers | Units, filler and **spelled-out words** are understood: `48`, `48 bits`, `about 48` and `eleven` (for `11`) all pass, and a spelled number is accepted with a note saying which numeral was read. Thousands/decimal commas and `0x30` work too. Tolerance is per question. |
 | Prose | A `keywords` spec accepts a real sentence ("it raises an exception") instead of demanding one magic word. |
 | Blanks | Each blank is marked separately and shown as ✓/✕ with the accepted text. |
 
@@ -65,9 +65,16 @@ without touching the views, the store or the round logic.
 
 | Language | Engine | Notes |
 | --- | --- | --- |
-| JavaScript | Web Worker running the tests with `assert` | instant |
+| JavaScript | Web Worker running the tests with `assert` | instant; tests may `await` |
 | Python | [Pyodide](https://pyodide.org) (CPython in WebAssembly) | ~10 MB, fetched once, cached |
 | Java | [CheerpJ](https://cheerpj.com) (a WebAssembly JVM) running `javac` | needs `vendor/jdk/tools.jar` (see `vendor/jdk/README.md`) |
+| Rust | the [public Rust playground](https://play.rust-lang.org) (`/execute`, no key) | **the one thing that leaves the machine**; a browser has no Rust compiler |
+
+Rust is the honest exception: a browser cannot compile Rust, so the source is
+POSTed to the public playground (the same approach as the standalone Rust trial
+page). The question screen says so before the student types anything, a
+rate-limit or outage is reported as *unavailable* rather than a wrong answer, and
+the other three languages never leave the machine.
 
 Details that matter:
 
@@ -117,12 +124,21 @@ What each suite is responsible for:
 | `tests/engines.test.js` | engine registry, JavaScript questions pass with a solution and fail with their starter, Python/Java script assembly |
 | `tests/python-engine.test.js` | the Python questions executed for real by Pyodide (pass, fail, syntax error, stdout, prelude) |
 | `tests/java-harness.test.js` | the generated Java harness compiled and run by a real JDK; loader-version drift check |
+| `tests/rust-engine.test.js` | harness assembly and verdict parsing, the "unavailable is not a wrong answer" paths, and every Rust question compiled by the real playground (skipped if the network is down) |
 | `tests/e2e.test.js` | seven journeys: keyboard-only round → results; count box clamping + fully written round; hints/traps/case; coding answers; review screen + best score + typing guards; resume, mix persistence and a dead engine; typo policy + opting into the local AI |
 
-Python and Java need a browser, so the E2E suite stubs those two engines through
+Python, Java and Rust need a browser, so the E2E suite stubs those engines through
 the public `registerEngine()` registry while keeping storage, marking, feedback
-and resume real. The question content for both languages is verified against the
-real runtimes in their own suites.
+and resume real. The question content for those languages is verified against the
+real runtimes (and the real playground) in their own suites.
+
+### Layout
+
+The home screen shows the twelve topics in three labelled sections of four
+(`Languages`, `Foundations`, `Systems & practice`). Column counts are chosen so a
+section never ends in a ragged row — 4 across on desktop, 2 on tablet, 1 on a
+phone — and the browser suite fails the build if a card in a row is a different
+size or the page ever scrolls sideways.
 
 CI (`.github/workflows/ci.yml`) runs `npm test` on Node 22 with a JDK 21 on
 PATH, so a broken Java harness or a Python regression fails the build. A second
@@ -139,6 +155,10 @@ WebAssembly engines and the real DOM can be checked together:
 - every JavaScript coding question passes with its reference solution
 - **Python really runs** (Pyodide): pass, fail with a message, syntax error
 - **Java really compiles and runs** (CheerpJ + `javac` + `vendor/jdk/tools.jar`)
+- **Rust really compiles and runs** on the playground, and a syntax error comes
+  back as a compiler message rather than an outage
+- the topic grid stays even at every width (full rows, equal card sizes, no
+  sideways scroll) — see the layout note below
 - all ~120 written answers follow their marking policy, in the browser
 - the local AI is off until asked for, and when it cannot load it says so and
   never changes a mark

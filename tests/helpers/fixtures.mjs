@@ -18,6 +18,16 @@ export const JS_SOLUTIONS = {
   "isBalanced(s)": "function isBalanced(s) {\n  const pairs = { ')': '(', ']': '[', '}': '{' };\n  const stack = [];\n  for (const ch of s) {\n    if (ch === '(' || ch === '[' || ch === '{') stack.push(ch);\n    else if (pairs[ch]) { if (stack.pop() !== pairs[ch]) return false; }\n  }\n  return stack.length === 0;\n}",
   "reverseArray(arr)": "function reverseArray(arr) {\n  return arr.slice().reverse();\n}",
   "sumTree(node)": "function sumTree(node) {\n  if (!node) return 0;\n  return node.v + sumTree(node.left) + sumTree(node.right);\n}",
+  "runAll(tasks)": "function runAll(tasks) {\n  return Promise.all(tasks.map((t) => t()));\n}",
+  "serial(tasks)": "async function serial(tasks) {\n  const out = [];\n  for (const t of tasks) out.push(await t());\n  return out;\n}",
+};
+
+/** Rust answers, compiled by the public playground. */
+export const RUST_SOLUTIONS = {
+  "double(n": "fn double(n: i32) -> i32 {\n    n * 2\n}",
+  "sum_to(n": "fn sum_to(n: u32) -> u32 {\n    (1..=n).sum()\n}",
+  "count_words(s": "fn count_words(s: &str) -> usize {\n    s.split_whitespace().count()\n}",
+  "evens(v": "fn evens(v: &[i32]) -> Vec<i32> {\n    v.iter().copied().filter(|n| n % 2 == 0).collect()\n}",
 };
 
 export const PYTHON_SOLUTIONS = {
@@ -110,6 +120,7 @@ export function solutionFor(question) {
   const prompt = question.q || "";
   if (question.lang === "java") return lookup(JAVA_SOLUTIONS, prompt);
   if (question.lang === "python") return lookup(PYTHON_SOLUTIONS, prompt);
+  if (question.lang === "rust") return lookup(RUST_SOLUTIONS, prompt);
   return lookup(JS_SOLUTIONS, prompt);
 }
 

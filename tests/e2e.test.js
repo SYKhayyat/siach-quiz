@@ -33,6 +33,10 @@ function stubEngine() {
 }
 registerEngine("python", stubEngine());
 registerEngine("java", stubEngine());
+// Rust's real engine talks to the public playground; the suite runs offline.
+// The real thing is verified in tests/rust-engine.test.js and the browser suite.
+registerEngine("rust", stubEngine());
+const STUBBED_LANGS = ["python", "java", "rust"];
 
 /* ------------------------------ helpers ------------------------------ */
 
@@ -95,7 +99,7 @@ function defaultPlan(ctx, mode) {
     return { slot: wantPass ? correct : (correct + 1) % 4, expect: wantPass };
   }
   if (ctx.kind === "code") {
-    const stubbed = ctx.question.lang === "python" || ctx.question.lang === "java";
+    const stubbed = STUBBED_LANGS.includes(ctx.question.lang);
     const fixture = solutionFor(ctx.question);
     if (stubbed) return { value: wantPass ? STUB_PASS : STUB_FAIL, expect: wantPass };
     if (wantPass && fixture) return { value: fixture, expect: true };
@@ -360,12 +364,21 @@ test("flow 4: coding answers really execute, and their verdicts are honest", asy
 test("flow 5: the review screen, best score and keyboard guards", async () => {
   const { app, done } = boot();
   try {
-    const longAnswer = (a) =>
+    // An EXACT question with a longish answer: there a near miss is wrong, which
+    // is what this flow checks. On a conceptual question the same slip is
+    // accepted, so it is excluded on purpose.
+    const exactLongAnswer = (a) =>
       a.store.round.some((_, i) => {
         const q = a.store.itemAt(i);
-        return !a.store.isMC(i) && !a.store.isCode(i) && Array.isArray(q.check?.values) && q.check.values[0].length >= 8;
+        return (
+          !a.store.isMC(i) &&
+          !a.store.isCode(i) &&
+          Array.isArray(q.check?.values) &&
+          q.check.values[0].length >= 8 &&
+          !aiReviewAllowed(q)
+        );
       });
-    await until(app, "meth", 6, longAnswer, "a written question with a longish accepted answer");
+    await until(app, "meth", 6, exactLongAnswer, "an exact question with a longish accepted answer");
     assert.equal(app.store.mix.text, 6);
 
     let typoIndex = -1;
@@ -374,7 +387,14 @@ test("flow 5: the review screen, best score and keyboard guards", async () => {
       mode: "wrong",
       plan: (ctx) => {
         const values = ctx.question.check?.values;
-        if (!ctx.app.store.isMC(ctx.i) && !ctx.app.store.isCode(ctx.i) && Array.isArray(values) && values[0].length >= 8 && typoIndex < 0) {
+        if (
+          !ctx.app.store.isMC(ctx.i) &&
+          !ctx.app.store.isCode(ctx.i) &&
+          Array.isArray(values) &&
+          values[0].length >= 8 &&
+          !aiReviewAllowed(ctx.question) &&
+          typoIndex < 0
+        ) {
           typoIndex = ctx.i;
           return { value: values[0] + "x", expect: false };
         }
@@ -404,7 +424,7 @@ test("flow 5: the review screen, best score and keyboard guards", async () => {
 
     // Best score lands on the home card.
     goHome();
-    assert.match($(".card[data-t='meth']").textContent, /Best: 0\/20/);
+    assert.match($(".card[data-t='meth']").textContent, /Best 0\/20/);
     openTopic("meth");
     assert.equal($("#resumeBtn"), null, "a finished round leaves nothing to resume");
     assert.match($(".gradingnote").textContent, /capitalization/i, "the grading rules are stated up front");
@@ -440,7 +460,7 @@ test("flow 6: resume keeps the mix, and a dead engine never marks you wrong", as
     await playRound(app, { mode: "correct", limit: 3 });
     const roundBefore = app.store.round.map((r) => r.idx + ":" + r.kind).join(",");
     goHome();
-    assert.match($(".card[data-t='python']").textContent, /Resume — 3\/20/);
+    assert.match($(".card[data-t='python']").textContent, /Resume 3\/20/);
 
     openTopic("python");
     assert.match($("#resumeBtn").textContent, /Resume — 3\/20/);

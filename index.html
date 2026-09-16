@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>CS Quiz — siachshai.online</title>
-<meta name="description" content="10 computer science topics, 20 questions per round — multiple choice plus written and coding answers, with instant feedback.">
+<meta name="description" content="12 computer science topics, 20 questions per round — multiple choice plus written and coding answers, graded instantly.">
 <link rel="icon" href="favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="styles.css">
 </head>
@@ -16,6 +16,7 @@
     <div class="meta"><span id="progText"></span><span id="scoreText"></span><span id="timer" title="Elapsed time">00:00</span></div>
   </div>
   <div class="hrow push-down">
+    <span class="topicbar" id="topicBar"></span>
     <div class="bar-thin" title="Progress"><div id="progFill"></div></div>
   </div>
   <div id="circles"></div>
@@ -26,7 +27,7 @@
   <section id="viewQuiz" class="hidden"><div id="questions"></div></section>
   <section id="viewResult" class="hidden"></section>
 </main>
-<footer>10 topics · 20 questions per round · written answers graded on the spot · coding answers run in your browser</footer>
+<footer>12 topics · 20 questions per round · written answers graded on the spot · code run in your browser (Rust via play.rust-lang.org)</footer>
 <script type="module" src="js/main.js"></script>
 </body>
 </html>

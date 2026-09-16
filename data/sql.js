@@ -1,4 +1,4 @@
-export default { title: "SQL & Databases", desc: "SELECT, joins, keys, normalization, transactions.",
+export default { title: "SQL & Databases", desc: "SELECT, joins, keys, normalization, transactions.", group: "Systems & practice",
 questions: [
 {q: "Your report must exclude refunded orders before grouping by month. Which clause filters first?", choices: ["<code>HAVING</code>", "<code>WHERE</code>", "<code>ORDER BY</code>", "<code>SELECT</code>"], answer: 1, why: "<code>WHERE</code> filters input rows; <code>HAVING</code> filters groups after <code>GROUP BY</code>.", notes: ["HAVING filters groups, not input rows.", "", "ORDER BY only sorts output.", "SELECT only projects columns."], tag: "SELECT"},
 {q: "You need every column from users for a quick debug. Which query?", choices: ["<code>SELECT * FROM users;</code>", "<code>GET users;</code>", "<code>SELECT users;</code>", "<code>FETCH * users;</code>"], answer: 0, why: "<code>SELECT * FROM t</code> scans all columns (name them explicitly in prod).", notes: ["", "GET is not SQL.", "That selects nothing valid.", "FETCH is for cursors, not this."], tag: "SELECT"},

@@ -103,9 +103,55 @@ function isNumericSpec(spec) {
   return (spec && spec.type) === "number";
 }
 
+const NUMBER_WORDS = {
+  zero: 0, one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8, nine: 9,
+  ten: 10, eleven: 11, twelve: 12, thirteen: 13, fourteen: 14, fifteen: 15, sixteen: 16,
+  seventeen: 17, eighteen: 18, nineteen: 19, twenty: 20, thirty: 30, forty: 40, fifty: 50,
+  sixty: 60, seventy: 70, eighty: 80, ninety: 90,
+};
+const NUMBER_SCALES = { hundred: 100, thousand: 1000, million: 1000000 };
+
+/**
+ * Spelled-out numbers count too: "eleven" is 11. Students type words as often
+ * as digits, and there is no reason for that to be marked wrong.
+ * Handles "twenty-one", "one hundred and five", "two thousand".
+ */
+export function parseNumberWords(given) {
+  const tokens =
+    String(given ?? "")
+      .toLowerCase()
+      .replace(/[-\u2013\u2014]/g, " ")
+      .match(/[a-z]+/g) || [];
+  let total = 0;
+  let current = 0;
+  let started = false;
+  for (const token of tokens) {
+    if (NUMBER_WORDS[token] !== undefined) {
+      current += NUMBER_WORDS[token];
+      started = true;
+      continue;
+    }
+    if (token === "hundred") {
+      current = (current || 1) * 100;
+      started = true;
+      continue;
+    }
+    if (NUMBER_SCALES[token]) {
+      total += (current || 1) * NUMBER_SCALES[token];
+      current = 0;
+      started = true;
+      continue;
+    }
+    if (token === "and") continue; // "one hundred and five"
+    if (started) break; // the number has ended ("eleven packets")
+  }
+  return started ? total + current : null;
+}
+
 /**
  * Pull a number out of a free-text answer so units and filler words do not
- * fail an otherwise correct answer: "48 bits", "~200", "about 3 packets".
+ * fail an otherwise correct answer: "48 bits", "~200", "about 3 packets",
+ * "eleven".
  */
 export function parseNumber(given) {
   const text = String(given ?? "").trim();
@@ -115,7 +161,7 @@ export function parseNumber(given) {
   const bin = text.match(/^[-+]?0[bB][01]+$/);
   if (bin) return Number(bin[0]);
   const m = text.match(/-?\d[\d,_]*(?:\.\d+)?/);
-  if (!m) return null;
+  if (!m) return parseNumberWords(text);
   let raw = m[0];
   const commas = raw.match(/,/g);
   if (!raw.includes(".") && commas) {
@@ -180,7 +226,14 @@ export function matchesOne(spec, given, strictCase = true) {
 export function evaluate(spec, given) {
   if (!spec) return { ok: false, hint: "" };
   if (isNumericSpec(spec)) {
-    if (matchesNumber(spec, given)) return { ok: true, hint: "" };
+    if (matchesNumber(spec, given)) {
+      // A number the student spelled out is still right — say which numeral we
+      // read, so they know the grader understood them.
+      const spelled = !/\d/.test(String(given ?? "")) && parseNumberWords(given) !== null;
+      return spelled
+        ? { ok: true, soft: true, hint: "Accepted — “" + String(given).trim() + "” reads as " + spec.value + "." }
+        : { ok: true, hint: "" };
+    }
     const n = parseNumber(given);
     return {
       ok: false,

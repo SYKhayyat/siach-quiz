@@ -4,7 +4,8 @@ import assert from "node:assert/strict";
 import { topics } from "../data/all.js";
 import { ROUND_SIZE } from "../js/store.js";
 import { engineLangs } from "../js/engines/index.js";
-import { aiReviewAllowed, evaluate, typoPolicy } from "../js/check.js";
+import { aiReviewAllowed, evaluate, gradeTextAnswer, typoPolicy } from "../js/check.js";
+import { correctAnswer, wrongAnswer } from "./helpers/fixtures.mjs";
 
 const ids = Object.keys(topics);
 
@@ -162,6 +163,25 @@ test("every written question declares how strictly it is marked", () => {
   }
 });
 
+/**
+ * The suites drive rounds with generated answers, so the fixtures themselves are
+ * part of the contract: the "correct" answer must be accepted for every question
+ * and the "wrong" one must be rejected — under the current marking policy, which
+ * is where a lenient-typo rule can quietly break this.
+ */
+test("the fixtures agree with the grader for every written question", () => {
+  for (const id of ids) {
+    for (const q of topics[id].text || []) {
+      if (q.kind !== "text") continue;
+      const where = `${id}: ${q.q.slice(0, 45)}`;
+      const good = gradeTextAnswer(q, correctAnswer(q));
+      assert.equal(good.pass, true, `${where} — the correct fixture was rejected`);
+      const bad = gradeTextAnswer(q, wrongAnswer(q));
+      assert.equal(bad.pass, false, `${where} — the wrong fixture (${JSON.stringify(wrongAnswer(q))}) was accepted`);
+    }
+  }
+});
+
 test("each language with code questions has at least two", () => {
   const counts = {};
   for (const id of ids) {
@@ -169,7 +189,7 @@ test("each language with code questions has at least two", () => {
       if (q.kind === "code") counts[q.lang] = (counts[q.lang] || 0) + 1;
     }
   }
-  for (const lang of ["python", "java", "javascript"]) {
+  for (const lang of ["python", "java", "javascript", "rust"]) {
     assert.ok((counts[lang] || 0) >= 2, lang + " should have at least two coding questions");
   }
 });

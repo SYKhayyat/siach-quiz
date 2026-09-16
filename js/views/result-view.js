@@ -57,6 +57,7 @@ export function renderResult(els, show, store, elapsedMs, hooks) {
     '<button class="btn ghost" id="retryBtn">New test</button>' +
     '<button class="btn ghost" id="backBtn">All topics</button></div>' +
     '<div class="rev">' + review + "</div></div>";
+  if (els.topicBar) els.topicBar.textContent = topic.title + " — results";
   els.result.querySelector("#replayBtn").addEventListener("click", hooks.onReplay);
   els.result.querySelector("#retryBtn").addEventListener("click", hooks.onRetry);
   els.result.querySelector("#backBtn").addEventListener("click", hooks.onHome);

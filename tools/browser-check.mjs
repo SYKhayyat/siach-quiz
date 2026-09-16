@@ -2,7 +2,8 @@
 /**
  * Real-browser verification for the parts jsdom cannot run:
  * Pyodide (Python in WebAssembly), CheerpJ (a WebAssembly JVM running javac),
- * and the Web Worker code path.
+ * the Rust playground, the written-answer policy across all the real data, the
+ * opt-in local-AI gating, and the Web Worker code path.
  *
  * Usage:
  *   node tools/browser-check.mjs [baseUrl]
@@ -24,13 +25,19 @@ import { createServer } from "node:http";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { JAVA_SOLUTIONS, JS_SOLUTIONS, PYTHON_SOLUTIONS } from "../tests/helpers/fixtures.mjs";
+import { JAVA_SOLUTIONS, JS_SOLUTIONS, PYTHON_SOLUTIONS, RUST_SOLUTIONS } from "../tests/helpers/fixtures.mjs";
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "..");
 const PORT = Number(process.env.CDP_PORT || 9333);
 const SERVE_PORT = Number(process.env.SERVE_PORT || 8123);
 const ONLY = (process.env.ONLY || "").split(",").map((s) => s.trim().toLowerCase()).filter(Boolean);
 const TOOLS_JAR = path.join(ROOT, "vendor", "jdk", "tools.jar");
+
+/** Every language that must have a real runner. Rust's runs off-machine. */
+const EXPECTED_ENGINES = ["java", "javascript", "python", "rust"];
+
+/** Filled in from the page at boot, so adding a topic never edits this file. */
+let TOPIC_COUNT = 0;
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -306,7 +313,8 @@ async function bootPage() {
   const loaded = new Promise((resolve) => cdp.on((m) => m.method === "Page.loadEventFired" && resolve()));
   await cdp.send("Page.navigate", { url: BASE_URL }, sess);
   await loaded;
-  await waitForPage("document.querySelectorAll('.card').length === 10", { label: "10 topic cards" });
+  await waitForPage("document.querySelectorAll('.card').length > 0", { label: "the topic cards" });
+  TOPIC_COUNT = await evaluate("document.querySelectorAll('.card').length");
   await sleep(500); // let late module work settle
 }
 
@@ -315,8 +323,16 @@ await bootPage();
 await check("the app loads in a real browser without page errors", async () => {
   if (pageErrors.length > 0) throw new Error("page errors: " + pageErrors.join(" | "));
   const cards = await evaluate("document.querySelectorAll('.card').length");
-  if (cards !== 10) throw new Error("expected 10 topic cards, got " + cards);
-  current.notes.push("10 topic cards rendered");
+  if (cards !== TOPIC_COUNT) throw new Error("expected " + TOPIC_COUNT + " topic cards, got " + cards);
+  const groups = await evaluate("document.querySelectorAll('.tgroup').length");
+  if (groups < 3) throw new Error("expected the topics grouped into sections, got " + groups);
+  const sections = await evaluate("[...document.querySelectorAll('.tgroup .ghead h3')].map((h) => h.textContent).join(' / ')");
+  const listed = await evaluate("[...document.querySelectorAll('.card h3')].map((h) => h.textContent).join(', ')");
+  const blurbs = await evaluate("document.querySelector('.brandbar p').textContent");
+  current.notes.push(cards + " topic cards in " + groups + " labelled rows");
+  current.notes.push("sections: " + sections);
+  current.notes.push("topics: " + listed);
+  current.notes.push("intro: " + blurbs);
 });
 
 await check("the app's modules resolve in the page (absolute and relative)", async () => {
@@ -331,16 +347,55 @@ await check("the app's modules resolve in the page (absolute and relative)", asy
     return out;
   })()`);
   if (info.error) throw new Error(info.error);
-  if (info.topics !== 10) throw new Error("expected 10 topics from /data/all.js, got " + info.topics);
-  if (JSON.stringify(info.engines) !== JSON.stringify(["java", "javascript", "python"])) {
+  if (info.topics !== TOPIC_COUNT) throw new Error("expected " + TOPIC_COUNT + " topics from /data/all.js, got " + info.topics);
+  if (JSON.stringify(info.engines) !== JSON.stringify(EXPECTED_ENGINES)) {
     throw new Error("engines: " + JSON.stringify(info.engines));
   }
-  current.notes.push("10 topics and " + info.engines.join(", ") + " resolve");
+  current.notes.push(TOPIC_COUNT + " topics and " + info.engines.join(", ") + " resolve");
 });
 
-await check("the three engines are registered in the browser", async () => {
+/**
+ * The home screen must look deliberate at every width: full rows of four, cards
+ * of equal height inside a row, and never a horizontal scrollbar. This is the
+ * only way to check a layout without a pair of eyes.
+ */
+await check("the topic grid stays even at every width", async (c) => {
+  const notes = [];
+  for (const width of [1280, 1000, 900, 700, 420]) {
+    await cdp.send("Emulation.setDeviceMetricsOverride", { width, height: 900, deviceScaleFactor: 1, mobile: false }, sess);
+    await sleep(150);
+    const info = await evaluate(`(() => {
+      const grid = document.querySelector('.grid');
+      const cols = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length;
+      const rows = [...document.querySelectorAll('.tgroup')].map((g) => g.querySelectorAll('.card').length);
+      const spread = [...document.querySelectorAll('.tgroup')].map((g) => {
+        const heights = [...g.querySelectorAll('.card')].map((card) => Math.round(card.getBoundingClientRect().height));
+        return Math.max(...heights) - Math.min(...heights);
+      });
+      const widths = [...document.querySelectorAll('.tgroup')].map((g) => {
+        const boxes = [...g.querySelectorAll('.card')].map((card) => Math.round(card.getBoundingClientRect().width));
+        return Math.max(...boxes) - Math.min(...boxes);
+      });
+      return { cols, rows, spread, widths, overflow: document.documentElement.scrollWidth - window.innerWidth };
+    })()`);
+    const where = width + "px";
+    if (TOPIC_COUNT % info.cols !== 0) throw new Error(where + ": " + info.cols + " columns leave a ragged last row");
+    if (info.rows.some((n) => n % info.cols !== 0)) {
+      throw new Error(where + ": a section's " + info.rows.join("/") + " cards leave a ragged row at " + info.cols + " columns");
+    }
+    if (info.spread.some((d) => d > 2)) throw new Error(where + ": cards in a row differ in height by " + info.spread.join("/") + "px");
+    if (info.widths.some((d) => d > 2)) throw new Error(where + ": cards in a row differ in width by " + info.widths.join("/") + "px");
+    if (info.overflow > 1) throw new Error(where + ": the page scrolls sideways by " + info.overflow + "px");
+    notes.push(where + " → " + info.cols + " across, " + TOPIC_COUNT / info.cols + " rows");
+  }
+  await cdp.send("Emulation.clearDeviceMetricsOverride", {}, sess);
+  await sleep(150);
+  c.notes.push(notes.join("; "));
+});
+
+await check("all four engines are registered in the browser", async () => {
   const langs = await evaluate("(async () => (await import('/js/engines/index.js')).engineLangs())()");
-  const expected = ["java", "javascript", "python"];
+  const expected = EXPECTED_ENGINES;
   if (JSON.stringify(langs) !== JSON.stringify(expected)) throw new Error("got " + JSON.stringify(langs));
   current.notes.push(langs.join(", "));
 });
@@ -498,6 +553,45 @@ if (!toolsJarOk) {
   });
 }
 
+/* ---- Rust (the public playground) ---- */
+
+await check("Rust answers really compile and run (play.rust-lang.org)", async (c) => {
+  const rustQuestions = await evaluate(
+    `(async () => {
+       const { topics } = await import('/data/all.js');
+       return topics.rust.text.filter(q => q.kind === 'code' && q.lang === 'rust').map(q => ({ q: q.q, tests: q.tests, starter: q.starter }));
+     })()`
+  );
+  if (rustQuestions.length === 0) throw new Error("no Rust coding questions were found");
+  const payload = JSON.stringify({ questions: rustQuestions, solutions: RUST_SOLUTIONS });
+  const outcome = await evaluate(
+    `(async () => {
+       const { runCodeTests } = await import('/js/engines/index.js');
+       const info = ${payload};
+       const statuses = [];
+       const results = [];
+       for (const q of info.questions) {
+         const key = Object.keys(info.solutions).find(k => q.q.includes(k));
+         if (!key) { results.push({ prompt: q.q.slice(0, 40), skipped: true }); continue; }
+         const good = await runCodeTests({ lang: 'rust', code: info.solutions[key], tests: q.tests, onStatus: (s) => statuses.push(s) });
+         const bad = await runCodeTests({ lang: 'rust', code: q.starter, tests: q.tests });
+         results.push({ prompt: q.q.slice(0, 40), good: good.pass, goodMessage: good.message, badPass: bad.pass });
+       }
+       const broken = await runCodeTests({ lang: 'rust', code: 'fn oops( {', tests: 'assert!(true);' });
+       return { results, statuses, broken };
+     })()`,
+    300_000
+  );
+  if (outcome.broken.unavailable) throw new Error("a Rust syntax error must not look like an outage");
+  if (!/error/i.test(outcome.broken.message)) throw new Error("expected a compiler message, got: " + outcome.broken.message);
+  const ran = outcome.results.filter((r) => !r.skipped);
+  const wrong = ran.filter((r) => !r.good || r.badPass);
+  if (ran.length === 0) throw new Error("no Rust question could be matched to a reference solution");
+  if (wrong.length > 0) throw new Error("Rust verdicts wrong: " + JSON.stringify(wrong.slice(0, 2)));
+  c.notes.push(ran.length + " Rust questions compiled and ran on the playground");
+  c.notes.push("a syntax error is reported as: " + outcome.broken.message.split("\n")[0].slice(0, 80));
+});
+
 /* ---- written-answer policy (real browser, real data) ---- */
 
 await check("every written answer is marked the way its question deserves", async (c) => {
@@ -616,7 +710,7 @@ await check("the optional local AI is opt-in, and cannot help => cannot change a
   await cdp.send("Network.setBlockedURLs", { urls: [] }, sess);
   await evaluate(`(() => { window.localStorage.removeItem('csq-ai-review'); return true; })()`);
   await clickSel("#homeBtn");
-  await waitForPage("document.querySelectorAll('.card').length === 10", { label: "home screen" });
+  await waitForPage("document.querySelectorAll('.card').length === " + TOPIC_COUNT, { label: "home screen" });
 });
 
 /* ---- UI integration ---- */
@@ -699,7 +793,7 @@ await check("an engine that cannot start leaves the question unanswered and warn
 
   // Start a fresh round and walk to a Python coding question again.
   await clickSel("#homeBtn");
-  await waitForPage("document.querySelectorAll('.card').length === 10", { label: "home screen" });
+  await waitForPage("document.querySelectorAll('.card').length === " + TOPIC_COUNT, { label: "home screen" });
   await evaluate(`(() => { document.querySelector('.card[data-t="python"]').click(); return true; })()`);
   await waitForPage("!!document.querySelector('#mixInput')", { label: "setup screen" });
   await evaluate(`(() => {

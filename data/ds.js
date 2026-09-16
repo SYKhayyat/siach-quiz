@@ -1,4 +1,4 @@
-export default { title: "Data Structures", desc: "Arrays, lists, stacks, queues, trees, heaps, hash tables, graphs.",
+export default { title: "Data Structures", desc: "Arrays, lists, stacks, queues, trees, heaps, hash tables, graphs.", group: "Foundations",
 questions: [
 {q: "Your hot loop reads a[i] a million times. What does each access cost?", choices: ["O(1)", "O(log n)", "O(n)", "O(n log n)"], answer: 0, why: "Contiguous storage + index arithmetic.", notes: ["", "No halving happens on index.", "No scan happens on index.", "No sorting is involved."], tag: "Arrays"},
 {q: "You append a million rows to a dynamic array. What does each append cost on average?", choices: ["O(1) amortized", "O(n) every time", "O(log n)", "O(n²)"], answer: 0, why: "Doubling growth: rare O(n) resizes spread over many O(1) appends.", notes: ["", "Only the occasional resize costs O(n).", "No halving is involved.", "Nothing quadratic happens."], tag: "Arrays"},
