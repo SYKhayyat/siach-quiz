@@ -1,8 +1,36 @@
-import { gradeTextAnswer } from "./check.js";
-import { runCodeTests } from "./run-code.js";
+import { acceptedAnswer, aiReviewAllowed, gradeTextAnswer } from "./check.js";
+import { aiAvailable, aiSupport, judgeAnswer } from "./ai/on-device.js";
+import { runCodeTests } from "./engines/index.js";
 
 export const ROUND_SIZE = 20;
-const SAVE_VERSION = 2;
+const SAVE_VERSION = 4;
+
+/** The optional on-device review is opt-in per browser, and stays that way. */
+const AI_SETTING_KEY = "csq-ai-review";
+
+export function readAIEnabled() {
+  try {
+    return localStorage.getItem(AI_SETTING_KEY) === "on";
+  } catch {
+    return false;
+  }
+}
+
+export function writeAIEnabled(on) {
+  try {
+    if (on) localStorage.setItem(AI_SETTING_KEY, "on");
+    else localStorage.removeItem(AI_SETTING_KEY);
+  } catch {
+    /* private-only mode: the setting simply won't stick */
+  }
+}
+
+/** Clamp a user-typed "how many written questions" value into a usable count. */
+export function normalizeTextCount(value, maxText) {
+  const n = Math.trunc(Number(value));
+  if (!Number.isFinite(n)) return 0;
+  return Math.max(0, Math.min(n, ROUND_SIZE, Math.max(0, maxText)));
+}
 
 function shuffledSlots() {
   const slots = [0, 1, 2, 3];
@@ -39,8 +67,11 @@ export class QuizStore {
     this.revealed = [];
     this.marks = [];
     this.blanks = [];
+    this.hints = [];
     this.traps = [];
     this.codeMsg = [];
+    this.aiNotes = [];
+    this.aiState = [];
     this.qTimes = [];
     this.view = 0;
     this.pending = null;
@@ -72,8 +103,12 @@ export class QuizStore {
   isCode(i) {
     return this.round[i].kind === "code";
   }
+  /** Display slot -> index into the question's own choices array. */
+  choiceIndex(i, slot) {
+    return this.round[i].shuffle[slot];
+  }
   choiceText(i, slot) {
-    return this.itemAt(i).choices[this.round[i].shuffle[slot]];
+    return this.itemAt(i).choices[this.choiceIndex(i, slot)];
   }
   correctSlot(i) {
     return this.round[i].shuffle.indexOf(this.itemAt(i).answer);
@@ -93,8 +128,11 @@ export class QuizStore {
       this.revealed = saved.revealed;
       this.marks = saved.marks;
       this.blanks = saved.blanks;
+      this.hints = saved.hints;
       this.traps = saved.traps;
       this.codeMsg = saved.codeMsg;
+      this.aiNotes = saved.aiNotes;
+      this.aiState = Array(saved.round.length).fill("idle");
       this.qTimes = saved.qTimes;
       this.mix = saved.mix;
     } else {
@@ -109,8 +147,11 @@ export class QuizStore {
       this.revealed = Array(this.round.length).fill(false);
       this.marks = Array(this.round.length).fill(null);
       this.blanks = Array(this.round.length).fill(null);
+      this.hints = Array(this.round.length).fill("");
       this.traps = Array(this.round.length).fill("");
       this.codeMsg = Array(this.round.length).fill("");
+      this.aiNotes = Array(this.round.length).fill("");
+      this.aiState = Array(this.round.length).fill("idle");
       this.qTimes = Array(this.round.length).fill(null);
       this.mix = { text: t };
     }
@@ -140,23 +181,80 @@ export class QuizStore {
     this.answers[i] = input;
     this.marks[i] = result.pass;
     this.blanks[i] = result.marks;
+    this.hints[i] = result.hint || "";
     this.traps[i] = result.trap || "";
     this.revealed[i] = true;
     this.stamp(i);
     this.saveProgress();
     return result.pass;
   }
-  async answerCode(i, code) {
+  async answerCode(i, code, onStatus) {
     if (this.revealed[i]) return null;
     const q = this.itemAt(i);
-    const result = await runCodeTests(code, q.tests);
+    const result = await runCodeTests({
+      lang: q.lang || "javascript",
+      code,
+      tests: q.tests,
+      prelude: q.prelude,
+      onStatus,
+    });
+    if (result.unavailable) {
+      // The engine could not start (offline, blocked, unsupported browser).
+      // Leave the question unanswered so the student keeps their attempt.
+      return { unavailable: true, pass: false, message: result.message };
+    }
     this.answers[i] = code;
     this.marks[i] = result.pass;
     this.codeMsg[i] = result.message;
+    this.hints[i] = result.hint || "";
     this.revealed[i] = true;
     this.stamp(i);
     this.saveProgress();
-    return result.pass;
+    return { pass: result.pass, message: result.message };
+  }
+  /**
+   * Ask the on-device model for a second opinion on a written answer the rules
+   * marked wrong. Narrow on purpose: only conceptual questions (`aiReviewAllowed`)
+   * qualify, the model can only upgrade a fail, and a failure to load changes
+   * nothing about the student's mark.
+   */
+  async reviewWithAI(i, { engine, onProgress } = {}) {
+    const q = this.itemAt(i);
+    if (!this.revealed[i]) return { status: "not-answered" };
+    if (this.marks[i]) return { status: "already-correct" };
+    if (!aiReviewAllowed(q)) {
+      this.aiState[i] = "not-allowed";
+      return {
+        status: "not-allowed",
+        message: "This one is exact (syntax, output or a number), so the graded answer is final — a model must not second-guess it.",
+      };
+    }
+    if (!engine && !aiAvailable()) {
+      const reason = aiSupport().reason;
+      this.aiState[i] = "unsupported";
+      this.aiNotes[i] = reason;
+      return { status: "unsupported", message: reason };
+    }
+    this.aiState[i] = "running";
+    try {
+      const verdict = await judgeAnswer({
+        question: q.q,
+        expected: acceptedAnswer(q),
+        given: this.answers[i],
+        engine,
+        onProgress,
+      });
+      this.aiState[i] = "done";
+      this.aiNotes[i] = verdict.reason;
+      if (verdict.equivalent) this.marks[i] = true;
+      this.saveProgress();
+      return { status: "done", equivalent: !!verdict.equivalent, reason: verdict.reason };
+    } catch (err) {
+      const message = String((err && err.message) || err).slice(0, 300);
+      this.aiState[i] = "error";
+      this.aiNotes[i] = message;
+      return { status: "error", message };
+    }
   }
   counts() {
     let right = 0;
@@ -175,8 +273,11 @@ export class QuizStore {
     this.revealed = Array(this.round.length).fill(false);
     this.marks = Array(this.round.length).fill(null);
     this.blanks = Array(this.round.length).fill(null);
+    this.hints = Array(this.round.length).fill("");
     this.traps = Array(this.round.length).fill("");
     this.codeMsg = Array(this.round.length).fill("");
+    this.aiNotes = Array(this.round.length).fill("");
+    this.aiState = Array(this.round.length).fill("idle");
     this.qTimes = Array(this.round.length).fill(null);
     this.pending = null;
     this.view = 0;
@@ -202,8 +303,10 @@ export class QuizStore {
           revealed: this.revealed,
           marks: this.marks,
           blanks: this.blanks,
+          hints: this.hints,
           traps: this.traps,
           codeMsg: this.codeMsg,
+          aiNotes: this.aiNotes,
           qTimes: this.qTimes,
         })
       );
@@ -215,6 +318,15 @@ export class QuizStore {
 
 function validRound(round, mcPool, txPool) {
   if (!Array.isArray(round) || round.length === 0 || round.length > ROUND_SIZE) return false;
+  const used = new Set();
+  const unique = round.every((r) => {
+    if (!r || !Number.isInteger(r.idx)) return false;
+    const key = r.kind + ":" + r.idx;
+    if (used.has(key)) return false;
+    used.add(key);
+    return true;
+  });
+  if (!unique) return false;
   return round.every((r) => {
     if (!r || !Number.isInteger(r.idx)) return false;
     if (r.kind === "mc") return r.idx >= 0 && r.idx < mcPool && Array.isArray(r.shuffle) && [0, 1, 2, 3].every((n) => r.shuffle.includes(n));
@@ -236,8 +348,10 @@ export function readProgress(topicId, mcPool, txPool) {
     if (!Array.isArray(data.marks) || data.marks.length !== n) return null;
     if (!Array.isArray(data.qTimes) || data.qTimes.length !== n) return null;
     data.blanks = Array.isArray(data.blanks) && data.blanks.length === n ? data.blanks : Array(n).fill(null);
+    data.hints = Array.isArray(data.hints) && data.hints.length === n ? data.hints : Array(n).fill("");
     data.traps = Array.isArray(data.traps) && data.traps.length === n ? data.traps : Array(n).fill("");
     data.codeMsg = Array.isArray(data.codeMsg) && data.codeMsg.length === n ? data.codeMsg : Array(n).fill("");
+    data.aiNotes = Array.isArray(data.aiNotes) && data.aiNotes.length === n ? data.aiNotes : Array(n).fill("");
     data.mix = data.mix && Number.isInteger(data.mix.text) ? data.mix : { text: 0 };
     return data;
   } catch {

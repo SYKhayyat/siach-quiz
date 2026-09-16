@@ -1,0 +1,9 @@
+node_modules/
+.tools/
+*.log
+
+# vendor/jdk/tools.jar IS committed (~18 MB) so Java runs on the deployed site;
+# see vendor/jdk/README.md before removing it.
+
+# Optional local copy of Pyodide, if you prefer it over the CDN
+vendor/pyodide/

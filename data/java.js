@@ -55,11 +55,60 @@ text: [
 {kind:"text", q:"Fill both blanks so the loop prints 0 1 2 3 4: for (int i = ___; i < ___; i++).", blanks:[{label:"start", values:["0"], answer:"0"}, {label:"bound", values:["5"], answer:"5"}], answer:"for (int i = 0; i < 5; i++)", why:"Start at 0, stop before 5.", tag:"Control"},
 {kind:"text", q:'"A".compareTo("B") is negative, zero, or positive? Answer with the word.', check:{values:["negative"]}, answer:"negative (specifically -1)", why:"'A' (65) < 'B' (66).", traps:[{match:{values:["positive"]}, note:"compareTo follows the caller's order: A comes first, so negative."}], tag:"Strings"},
 {kind:"text", q:"A boolean field starts as what?", check:{values:["false"]}, answer:"false", why:"Booleans default to false.", traps:[{match:{values:["0", "0.0"]}, note:"0 is for numbers; booleans default to false."}, {match:{values:["null"]}, note:"null is for objects."}], tag:"Types"},
-{kind:"text", q:"'abc' + 1 + 2 gives what?", check:{values:["abc12"]}, answer:"abc12", why:"Left to right: 'abc1' then + 2.", traps:[{match:{values:["abc3"]}, note:"No math happens once strings join — left to right: abc1, then abc12."}], tag:"Strings"},
+{kind:"text", q:"What exact string does 'abc' + 1 + 2 produce?", check:{values:["abc12"]}, answer:"abc12", why:"Left to right: 'abc1' then + 2.", traps:[{match:{values:["abc3"]}, note:"No math happens once strings join — left to right: abc1, then abc12."}], tag:"Strings"},
 {kind:"text", q:"How do you write the letter A as a char?", check:{values:["'A'"]}, answer:"'A'", why:"Single quotes make a char.", traps:[{match:{values:['"A"']}, note:"Double quotes make a String, not a char."}], tag:"Types"},
 {kind:"text", q:"5 % 2 equals what number?", check:{type:"number", value:1}, answer:"1", why:"5 = 2×2 + 1.", traps:[{match:{type:"number", value:2}, note:"2 is how many times it fits — remainder is 1."}, {match:{type:"number", value:2.5}, note:"int math stays whole."}], tag:"Operators"},
 {kind:"text", q:"Which keyword borrows behavior from a parent class?", check:{values:["extends"]}, answer:"extends", why:"extends inherits; implements borrows promises.", traps:[{match:{values:["implements"]}, note:"implements borrows promises — extends inherits."}, {match:{values:["inherits"]}, note:"No such keyword exists."}], tag:"OOP"},
-{kind:"text", q:"The main method returns what?", check:{values:["void"]}, answer:"void", why:"main returns nothing.", traps:[{match:{values:["int"]}, note:"C's main returns int; Java's returns nothing."}, {match:{values:["String"]}, note:"String[] is a parameter, not the return."}], tag:"Basics"},
-{kind:"text", q:"Array slots are numbered from what?", check:{type:"number", value:0}, answer:"0", why:"Java counts from 0.", traps:[{match:{type:"number", value:1}, note:"Counting starts at 0, not 1."}], tag:"Arrays"},
-{kind:"text", q:"A boolean holds how many possible values? Answer with a number.", check:{type:"number", value:2}, answer:"2 (true/false)", why:"Two values, nothing else.", traps:[{match:{type:"number", value:256}, note:"That's a byte. Booleans: true/false."}], tag:"Types"}
+{kind:"text", q:"What does the main method return?", check:{values:["void"]}, answer:"void", why:"main returns nothing.", traps:[{match:{values:["int"]}, note:"C's main returns int; Java's returns nothing."}, {match:{values:["String"]}, note:"String[] is a parameter, not the return."}], tag:"Basics"},
+{kind:"text", q:"What number does array numbering start from?", check:{type:"number", value:0}, answer:"0", why:"Java counts from 0.", traps:[{match:{type:"number", value:1}, note:"Counting starts at 0, not 1."}], tag:"Arrays"},
+{kind:"text", q:"A boolean holds how many possible values? Answer with a number.", check:{type:"number", value:2}, answer:"2 (true/false)", why:"Two values, nothing else.", traps:[{match:{type:"number", value:256}, note:"That's a byte. Booleans: true/false."}], tag:"Types"},
+{kind:"code", lang:"java", q:"Write the static method sum(int[] a) so it returns the total of the array, and 0 for an empty array.", starter:`class Solution {
+    static int sum(int[] a) {
+        return 0;
+    }
+}`, tests:`assertEquals(Solution.sum(new int[] {1, 2, 3}), 6, "sum of 1,2,3");
+assertEquals(Solution.sum(new int[] {}), 0, "empty array is 0");
+assertEquals(Solution.sum(new int[] {-1, 1}), 0, "cancels out");`, answer:"an int total plus a for-each loop over a", why:"Start the total at 0, add each element, return it — that is what keeps the empty array at 0.", tag:"Coding"},
+{kind:"code", lang:"java", q:"Write the static method countEven(int[] a) returning how many elements are even.", starter:`class Solution {
+    static int countEven(int[] a) {
+        return 0;
+    }
+}`, tests:`assertEquals(Solution.countEven(new int[] {1, 2, 3, 4}), 2, "two evens");
+assertEquals(Solution.countEven(new int[] {1, 3, 5}), 0, "none even");
+assertEquals(Solution.countEven(new int[] {0}), 1, "zero is even");`, answer:"count with n % 2 == 0", why:"n % 2 == 0 is the even test, and 0 % 2 is 0, so zero counts as even.", tag:"Coding"},
+{kind:"code", lang:"java", q:"Write the static method reverse(String s) returning the characters of s in reverse.", starter:`class Solution {
+    static String reverse(String s) {
+        return s;
+    }
+}`, tests:`assertEquals(Solution.reverse("abc"), "cba", "three letters");
+assertEquals(Solution.reverse(""), "", "empty stays empty");
+assertEquals(Solution.reverse("a"), "a", "single letter");`, answer:"new StringBuilder(s).reverse().toString()", why:"Strings are immutable, so build the reversed version with StringBuilder.", tag:"Coding"},
+{kind:"code", lang:"java", q:"Write the static method classify(int x) returning \"pos\", \"zero\" or \"neg\".", starter:`class Solution {
+    static String classify(int x) {
+        return "";
+    }
+}`, tests:`assertEquals(Solution.classify(5), "pos", "positive");
+assertEquals(Solution.classify(0), "zero", "zero");
+assertEquals(Solution.classify(-3), "neg", "negative");`, answer:"an if / else if / else chain", why:"Check the zero case explicitly: both x > 0 and x < 0 miss it.", tag:"Coding"},
+{kind:"code", lang:"java", q:"Write the static method wordFreq(String[] words) returning a Map<String,Integer> of how often each word appears.", starter:`import java.util.Map;
+import java.util.HashMap;
+
+class Solution {
+    static Map<String, Integer> wordFreq(String[] words) {
+        return new HashMap<>();
+    }
+}`, tests:`Map<String, Integer> f = Solution.wordFreq(new String[] {"a", "b", "a"});
+assertEquals(f.get("a"), 2, "a appears twice");
+assertEquals(f.get("b"), 1, "b appears once");
+assertEquals(Solution.wordFreq(new String[] {}).size(), 0, "empty input");`, answer:"map.merge(word, 1, Integer::sum)", why:"merge inserts 1 for a new key and adds 1 for an existing one, so there is no null check.", tag:"Coding"},
+{kind:"code", lang:"java", q:"Write class Solution with a constructor taking an int, and an instance method doubled() returning twice that value.", starter:`class Solution {
+    Solution(int value) {
+    }
+
+    int doubled() {
+        return 0;
+    }
+}`, tests:`assertEquals(new Solution(21).doubled(), 42, "21 doubled");
+assertEquals(new Solution(0).doubled(), 0, "zero");
+assertEquals(new Solution(-4).doubled(), -8, "negative");`, answer:"a private final field, set in the constructor", why:"Store the value in a field during construction; doubled() reads it back.", tag:"Coding"}
 ]};

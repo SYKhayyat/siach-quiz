@@ -1,6 +1,7 @@
 import { escapeHtml } from "../html.js";
 import { Timer } from "../timer.js";
 import { answerSummary } from "./quiz-view.js";
+import { langLabel } from "../engines/index.js";
 
 function grade(pct) {
   if (pct >= 90) return "Outstanding.";
@@ -20,19 +21,30 @@ export function renderResult(els, show, store, elapsedMs, hooks) {
       const q = store.itemAt(i);
       const s = answerSummary(store, i);
       const secs = store.qTimes[i] == null ? "" : " · " + Math.max(1, Math.round(store.qTimes[i] / 1000)) + "s";
-      const kind = store.isMC(i) ? "Multiple choice" : store.isCode(i) ? "Code" : "Written";
+      const kind = store.isMC(i)
+        ? "Multiple choice"
+        : store.isCode(i)
+          ? "Coding · " + langLabel(q.lang || "javascript")
+          : "Written";
       const detail = store.isMC(i)
         ? "you picked <b>" + s.you + "</b> — " + store.choiceText(i, store.answers[i]) + "<br>answer <b>" + s.expected + "</b> — " + store.choiceText(i, store.correctSlot(i))
         : store.isCode(i)
           ? "your code:<pre class=\"code\">" + escapeHtml(store.answers[i] || "") + "</pre>" +
             (s.ok ? "" : "Expected approach: <b>" + escapeHtml(s.expected) + "</b>")
           : s.you + (s.ok ? "" : "<br>Accepted: <b>" + s.expected + "</b>");
-      const note = !s.ok && s.note ? "<br>Why that pick fails: " + escapeHtml(s.note) : "";
+      const note = !s.ok && s.hint
+        ? "<br><b class=\"hintline\">" + escapeHtml(s.hint) + "</b>"
+        : !s.ok && s.note
+          ? "<br>Why that pick fails: " + escapeHtml(s.note)
+          : s.ok && s.hint && !store.isCode(i)
+            ? "<br><b class=\"softline\">" + escapeHtml(s.hint) + "</b>"
+            : "";
+      const ai = s.aiNote && s.aiAllowed ? "<br><b class=\"ailine\">Local AI: </b>" + escapeHtml(s.aiNote) : "";
       return (
         '<div class="rev-item">' +
         (s.ok ? '<b class="g">✓</b>' : '<b class="r">✕</b>') +
         " Q" + (i + 1) + " <small>(" + kind + secs + ")</small>" +
-        '<div class="rq">' + q.q + "</div>" + detail + note +
+        '<div class="rq">' + q.q + "</div>" + detail + note + ai +
         "<br>" + q.why + "</div>"
       );
     })

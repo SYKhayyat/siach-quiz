@@ -1,0 +1,20 @@
+{
+  "name": "cs-quiz",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "20-question computer science quiz with multiple-choice, written and browser-executed coding questions.",
+  "scripts": {
+    "test": "node --test --test-timeout=120000",
+    "test:unit": "node --test --test-timeout=60000 tests/grader.test.js tests/data.test.js tests/store.test.js tests/engines.test.js tests/policy-ai.test.js",
+    "browser": "node tools/browser-check.mjs",
+    "test:python": "node --test --test-timeout=120000 tests/python-engine.test.js",
+    "test:java": "node --test --test-timeout=180000 tests/java-harness.test.js",
+    "test:e2e": "node --test --test-timeout=120000 tests/e2e.test.js",
+    "serve": "python3 -m http.server 8000"
+  },
+  "devDependencies": {
+    "jsdom": "^26.1.0",
+    "pyodide": "^314.0.7"
+  }
+}

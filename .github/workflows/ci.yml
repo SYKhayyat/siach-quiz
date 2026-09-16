@@ -1,0 +1,56 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      # The Java suite compiles the generated test harness with a real JDK, so
+      # javac must be on PATH.
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - name: Install test dependencies
+        run: npm ci
+
+      - name: Unit, data, engine and end-to-end tests
+        run: npm test
+
+  # The parts jsdom cannot run: real DOM, Web Workers, Pyodide, CheerpJ + javac,
+  # and the opt-in local-AI gating. Kept as its own job so a CDN hiccup never
+  # hides a unit-test regression.
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - uses: browser-actions/setup-chrome@v1
+        id: chrome
+
+      - name: Install test dependencies
+        run: npm ci
+
+      - name: Real-browser checks (DOM, Pyodide, CheerpJ, local-AI gating)
+        env:
+          CHROMIUM_BIN: ${{ steps.chrome.outputs.chrome-path }}
+        run: npm run browser
