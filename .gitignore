@@ -1,6 +1,7 @@
 node_modules/
 .tools/
 *.log
+.netlify/
 
 # vendor/jdk/tools.jar IS committed (~18 MB) so Java runs on the deployed site;
 # see vendor/jdk/README.md before removing it.
