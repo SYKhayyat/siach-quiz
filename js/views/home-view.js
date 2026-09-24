@@ -59,7 +59,6 @@ export function renderHome(els, show, topics, readBest, progressOf, onStart) {
     " computer-science topics</h1><p>" +
     all.questions +
     " questions · 20 per round · written answers graded on the spot, code run in your browser</p></div></div>" +
-    '<nav class="portal-grid" aria-label="Choose an activity"><a class="portal-card portal-quiz" href="./"><span class="portal-kicker">Study</span><strong>Quiz</strong><small>Computer-science questions</small></a><a class="portal-card portal-games" href="https://games.siachshai.online"><span class="portal-kicker">Play</span><strong>Games</strong><small>The Cocktail Cabinet arcade</small></a></nav>' +
     '<div class="hero"><h2>Pick a topic</h2><p>Each round is 20 questions — you choose how many are written. You are marked after every one, with the reason why.</p></div>' +
     groups
       .map(
